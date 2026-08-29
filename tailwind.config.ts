@@ -8,6 +8,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      colors: {
+        midnight: "#001965",
+        royal: "#0032C8",
+        electric: "#1E56FF",
+        mint: "#A2FAA3",
+        // shadcn tokens (background, foreground, card, border, etc.) added in Task A4
+      },
+      fontFamily: {
+        sans: ["var(--font-dm-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
