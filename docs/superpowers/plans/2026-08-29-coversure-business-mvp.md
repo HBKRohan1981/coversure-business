@@ -20,6 +20,8 @@
 - **Customer-facing framing:** the concept is **"Business Assessment"** — CoverSure understands your business. AI is a quiet capability, never the headline. Do not label customer screens "AI analysis".
 - **Determination trail:** score categories, risks, and recommendations each carry a `determination` (Facts → Evidence → Assessment → Recommendation) surfaced via a "How did we determine this?" affordance. This is a core feature, not polish.
 - **Build priority:** the critical vertical slice (Phase E) must be built and made excellent before secondary screens (Phase F), admin (Phase G), and the responsive/polish pass (Phase H).
+- **No scope expansion:** execute this plan as written. Do NOT independently add features, screens, product concepts, or "improvements" beyond the approved spec. If something seems missing or ambiguous, flag it for review — do not invent scope.
+- **Execution sequence:** run A → B → C → D → E, then STOP at the hard review checkpoint after Task E9. Do not begin F/G/H until that review passes.
 - **Testing philosophy:** the "brain" (types + demo-data invariants) is built test-first with a real Node test that must fail then pass. UI is verified by `tsc --noEmit`, `next build`, and a documented manual click-through — there is no DOM test harness in this prototype. Commit after every task.
 - **Commits:** frequent, conventional-commit style, one per task minimum. Author `Rohan <rohan@coversure.in>`.
 
@@ -869,13 +871,39 @@ export const useSession = create<SessionState>()(
 - [ ] **Step 2:** Verify build + submitting adds a request to the store (check via `/app/quotes` in E-follow or temporarily log).
 - [ ] **Step 3:** Commit — `feat: fix with CoverSure lead capture (Screen 11)`.
 
-### Task E9: Critical-path polish pass
+### Task E9: Critical-path polish pass + fresh-session acceptance
 
 **Files:** touch as needed across Phase E screens.
 
 - [ ] **Step 1:** Walk the full path `/` → onboarding → upload → analysis → protection → recommendations → detail → fix → confirmation. Tighten spacing, transitions, copy, empty/hover/focus states, and ensure the ABC Manufacturing numbers are identical everywhere (they come from `demoCompany`). Confirm insurance language compliance on every screen.
-- [ ] **Step 2:** `npm run verify` PASS + `npm run build` PASS.
-- [ ] **Step 3:** Commit — `polish: critical vertical slice end-to-end`.
+
+- [ ] **Step 2: Fresh-session end-to-end acceptance (required).** Clear the persisted store first (browser: clear `localStorage` key `coversure-business-session`, or click account menu → Reset demo), then complete the journey **from a clean state**:
+  `Landing → Assess My Business → onboarding → upload → processing → analysis → protection → recommendation → Fix with CoverSure → submit request → confirmation.`
+  Every step must be reachable and functional starting from nothing pre-populated.
+
+- [ ] **Step 3: Commercial-workflow acceptance (required).** After submitting the request in Step 2, verify the request is written to the **persisted** session state — confirm `localStorage["coversure-business-session"]` contains the new entry in `submittedRequests` (recommendationId, solution, stage `request-submitted`) AND that it renders on `/app/quotes`. This is the exact data the Admin pipeline reads; the end-to-end admin-visibility confirmation is completed in Task G1 (which must surface this request) and re-checked in H2. Record in the commit message that the persisted request was verified.
+
+- [ ] **Step 4:** `npm run verify` PASS + `npm run build` PASS.
+- [ ] **Step 5:** Commit — `polish: critical vertical slice end-to-end + fresh-session acceptance`.
+
+---
+
+## 🚦 HARD REVIEW CHECKPOINT (after E9 — do not proceed to Phase F without approval)
+
+Execution must STOP here and present the critical slice for human review. Phase E is the real product test. The reviewer assesses:
+
+1. Does the product immediately communicate what CoverSure Business is?
+2. Is the onboarding sufficiently simple?
+3. Does the document / Business Assessment step feel believable?
+4. Is the Protection Score useful rather than gimmicky?
+5. Can the reviewer understand *why* a risk was identified (determination trail)?
+6. Are recommendations genuinely prioritised?
+7. Does "Fix with CoverSure" feel like the natural next step?
+8. Does the lead capture feel frictionless?
+9. Does the whole experience feel like a business protection *platform*, not an insurance comparison site?
+10. Does it look credible enough to put in front of someone at GFF 2026?
+
+Only after the reviewer confirms E is excellent does execution continue with F → G → H.
 
 ---
 
@@ -932,7 +960,7 @@ export const useSession = create<SessionState>()(
 **Interfaces:** Produces `adminSmes: {id,name,score,priorities,status,opportunity}[]`; ABC Manufacturing's row derives score/priorities from `demoCompany`.
 
 - [ ] **Step 1:** Separate admin chrome (distinct header "CoverSure Business — SME Pipeline", clearly internal). Metrics row: SMEs assessed, Assessments completed, Recommendations accepted, Quote requests (include live count from `useSession.submittedRequests` for ABC), Purchases, Revenue opportunity. Table: Business | Score | Priorities | Status | Opportunity, rows link to `/admin/[smeId]`.
-- [ ] **Step 2:** Verify build + `/admin` renders, ABC row present, quote-request metric reflects submitted requests.
+- [ ] **Step 2:** Verify build + `/admin` renders, ABC row present, quote-request metric reflects submitted requests. **Commercial-workflow closure:** confirm a request submitted via the E8 Fix flow (persisted in `submittedRequests`) is visible in the admin pipeline — this completes the SME → Assessment → Recommendation → Request → CoverSure action loop begun at E9 Step 3.
 - [ ] **Step 3:** Commit — `feat: admin pipeline list (Screen 15)`.
 
 ### Task G2: SME drill-down
