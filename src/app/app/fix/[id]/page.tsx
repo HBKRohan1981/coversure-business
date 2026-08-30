@@ -84,7 +84,7 @@ export default function FixPage({ params }: FixPageProps) {
     submitRequest({
       recommendationId: currentReco.id,
       solution: solution.trim().length > 0 ? solution : currentReco.recommended,
-      contactPerson: contactPerson.trim(),
+      contactName: contactPerson.trim(),
       phone: phone.trim(),
       email: email.trim(),
       preferredContact,

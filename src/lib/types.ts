@@ -57,6 +57,9 @@ export interface Recommendation {
 export interface QuoteRequest {
   id: string; recommendationId: string; solution: string;
   stage: RequestStage; submittedAt: string; // ISO string, static
+  contactName: string; phone: string; email: string;
+  preferredContact: string; // "Phone" | "Email" | "WhatsApp" (kept as string for simplicity)
+  note?: string;
 }
 
 export interface DemoCompany {

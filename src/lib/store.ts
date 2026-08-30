@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { QuoteRequest } from "./types";
 
-interface SubmitInput { recommendationId: string; solution: string; contactPerson: string; phone: string; email: string; preferredContact: string; note?: string; }
+interface SubmitInput { recommendationId: string; solution: string; contactName: string; phone: string; email: string; preferredContact: string; note?: string; }
 interface SessionState {
   onboardingComplete: boolean;
   uploadedDocs: string[];
@@ -27,7 +27,12 @@ export const useSession = create<SessionState>()(
       addUploadedDoc: (name) => set((s) => ({ uploadedDocs: [...new Set([...s.uploadedDocs, name])] })),
       submitRequest: (input) => {
         const id = `req-${get().submittedRequests.length + 1}-${input.recommendationId}`;
-        const req: QuoteRequest = { id, recommendationId: input.recommendationId, solution: input.solution, stage: "request-submitted", submittedAt: "2026-08-29T10:00:00.000Z" };
+        const req: QuoteRequest = {
+          id, recommendationId: input.recommendationId, solution: input.solution,
+          stage: "request-submitted", submittedAt: "2026-08-29T10:00:00.000Z",
+          contactName: input.contactName, phone: input.phone, email: input.email,
+          preferredContact: input.preferredContact, note: input.note,
+        };
         set((s) => ({ submittedRequests: [...s.submittedRequests, req] }));
         return id;
       },
