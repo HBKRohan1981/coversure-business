@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:data": "node --test --experimental-strip-types src/test/demo-data.invariants.test.mjs",
+    "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.6",
