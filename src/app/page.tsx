@@ -1,113 +1,177 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight, HeartHandshake, Search, ShieldCheck } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
+import { Card } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const PILLARS = [
+  {
+    icon: Search,
+    title: "Understand",
+    description: "AI analyses your business, financials and existing protection.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Protect",
+    description: "Identify gaps and prioritise what needs attention.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Look After Your People",
+    description:
+      "Provide meaningful employee protection, health and wellbeing benefits.",
+  },
+] as const;
+
+const JOURNEY_STEPS = ["Understand", "Assess", "Prioritise", "Protect", "Manage"] as const;
+
+function scrollToHow(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.preventDefault();
+  document.getElementById("how")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* Top bar */}
+      <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+          <Logo />
         </div>
-      </div>
+      </header>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        {/* Soft brand-colour glow, decorative only */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-40 right-[-10%] h-[420px] w-[420px] rounded-full bg-electric/10 blur-3xl" />
+          <div className="absolute top-20 left-[-10%] h-[320px] w-[320px] rounded-full bg-mint/20 blur-3xl" />
+        </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-24 text-center md:py-32">
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-4xl font-bold tracking-tight text-midnight sm:text-5xl md:text-6xl"
+          >
+            CoverSure Business
+          </motion.h1>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.08 }}
+            className="mt-4 text-xl font-medium text-royal sm:text-2xl"
+          >
+            AI-powered protection for businesses and their people
+          </motion.p>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.16 }}
+            className="mt-6 max-w-2xl text-base text-slate-600 sm:text-lg"
+          >
+            Assess business risks, identify protection gaps, provide employee
+            benefits, and manage insurance and wellbeing — all in one platform.
+          </motion.p>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.24 }}
+            className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
+          >
+            <Link
+              href="/onboarding"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "h-12 gap-2 bg-electric px-8 text-base text-white shadow-md hover:bg-royal"
+              )}
+            >
+              Assess My Business
+              <ArrowRight className="size-4" />
+            </Link>
+            <a
+              href="#how"
+              onClick={scrollToHow}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "h-12 border-midnight/15 px-8 text-base text-midnight hover:bg-midnight/5"
+              )}
+            >
+              See How It Works
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Pillars */}
+      <section id="how" className="border-t border-slate-100 bg-slate-50/60 py-20">
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-semibold text-midnight sm:text-3xl">
+              One platform, three commitments
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {PILLARS.map(({ icon: Icon, title, description }) => (
+              <Card
+                key={title}
+                className="border-slate-200 p-8 text-center transition-shadow hover:shadow-lg"
+              >
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-electric/10 text-electric">
+                  <Icon className="size-6" />
+                </div>
+                <h3 className="mt-5 text-lg font-semibold text-midnight">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {description}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Journey strip */}
+      <section className="border-t border-slate-100 py-16">
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:gap-2">
+            {JOURNEY_STEPS.map((step, i) => (
+              <div key={step} className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-midnight text-sm font-semibold text-white">
+                    {i + 1}
+                  </div>
+                  <span className="whitespace-nowrap text-sm font-medium text-midnight sm:text-base">
+                    {step}
+                  </span>
+                </div>
+                {i < JOURNEY_STEPS.length - 1 ? (
+                  <ArrowRight
+                    className="hidden size-4 shrink-0 text-slate-300 sm:block"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-100 py-8">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 text-sm text-slate-400">
+          <Logo className="h-6 opacity-70" />
+          <span>© 2026 CoverSure</span>
+        </div>
+      </footer>
+    </div>
   );
 }
