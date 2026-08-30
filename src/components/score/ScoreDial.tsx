@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { animate } from "framer-motion";
-import { scoreTone } from "@/lib/score";
-
-const TONE_COLOR: Record<ReturnType<typeof scoreTone>, string> = {
-  good: "#4FBF6B", // restrained emerald/mint tone
-  attention: "#D69A2D", // restrained amber
-  high: "#C24545", // restrained red
-};
+import { scoreTone, TONE_COLOR } from "@/lib/score";
 
 export interface ScoreDialProps {
   value: number;

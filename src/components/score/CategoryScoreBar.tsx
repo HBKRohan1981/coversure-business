@@ -1,12 +1,6 @@
 "use client";
 
-import { scoreTone } from "@/lib/score";
-
-const TONE_COLOR: Record<ReturnType<typeof scoreTone>, string> = {
-  good: "#4FBF6B",
-  attention: "#D69A2D",
-  high: "#C24545",
-};
+import { scoreTone, TONE_COLOR } from "@/lib/score";
 
 export interface CategoryScoreBarProps {
   label: string;
