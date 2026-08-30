@@ -140,9 +140,9 @@ export default function RecommendationDetailPage({
               <DialogTitle>We&apos;ll be in touch</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-slate-600">
-              A CoverSure specialist will reach out to talk through{" "}
-              {reco.title.toLowerCase()} and what could work for your business,
-              subject to underwriting and policy terms.
+              A CoverSure specialist will reach out to talk through the &ldquo;
+              {reco.title}&rdquo; recommendation and what could work for your
+              business, subject to underwriting and policy terms.
             </p>
           </DialogContent>
         </Dialog>
