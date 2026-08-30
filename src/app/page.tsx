@@ -12,7 +12,7 @@ const PILLARS = [
   {
     icon: Search,
     title: "Understand",
-    description: "AI analyses your business, financials and existing protection.",
+    description: "We build a complete picture of your business — financials, existing protection and risk profile.",
   },
   {
     icon: ShieldCheck,
