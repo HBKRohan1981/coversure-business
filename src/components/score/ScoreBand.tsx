@@ -84,7 +84,7 @@ export function ScoreBand({
           <span className="text-[30px] font-bold leading-none text-white">
             {clamped}
           </span>
-          <span className="mt-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-mint">
+          <span className="mt-1.5 max-w-[92px] text-center text-[10.5px] font-semibold uppercase leading-[1.2] tracking-[0.14em] text-mint">
             {label ?? `Out of ${max}`}
           </span>
         </div>
