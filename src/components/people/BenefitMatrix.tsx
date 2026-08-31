@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CheckCircle2, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Check, ArrowRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { BenefitItem } from "@/lib/types";
 
@@ -86,10 +86,12 @@ function groupByCategory(items: BenefitItem[]): Partial<Record<BenefitItem["cate
 
 /**
  * Reusable "what's provided vs what could help" matrix for the People &
- * Benefits screen. Groups both already-provided benefits and potential
- * opportunities by category; opportunities carry a per-item "why" and a
- * CTA into the employee recommendation convergence — never a bare catalogue
- * grid.
+ * Benefits screen, restyled to the same PI/D&O visual family as Business
+ * Protection: "Already provided" reads as a restrained mint-check list
+ * inside one hairline-grouped panel (de-cardified, per the coverage/category
+ * panels elsewhere); "Potential opportunities" keeps a card per item — each
+ * carries its own "why" and a CTA into the employee recommendation
+ * convergence — since that richer content benefits from a card boundary.
  */
 export function BenefitMatrix({
   items,
@@ -99,98 +101,104 @@ export function BenefitMatrix({
   const opportunities = items.filter((item) => !item.provided);
   const providedByCategory = groupByCategory(provided);
   const opportunitiesByCategory = groupByCategory(opportunities);
+  const providedCategories = CATEGORY_ORDER.filter(
+    (category) => providedByCategory[category]?.length
+  );
+  const opportunityCategories = CATEGORY_ORDER.filter(
+    (category) => opportunitiesByCategory[category]?.length
+  );
 
   return (
     <div className="space-y-12">
       {/* Already provided */}
       <section>
-        <h2 className="text-xl font-semibold text-midnight sm:text-2xl">
-          Already provided
+        <p className="kicker">Already provided</p>
+        <h2 className="mt-1 text-lg font-semibold text-midnight sm:text-xl">
+          What&apos;s already in place
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm text-muted-ink">
           Benefits identified in the information reviewed for your employees today.
         </p>
 
-        <div className="mt-6 space-y-6">
-          {CATEGORY_ORDER.filter((category) => providedByCategory[category]?.length).map(
-            (category) => (
-              <div key={category}>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="mt-5 overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+          <div className="divide-y divide-line">
+            {providedCategories.map((category) => (
+              <div key={category} className="px-6 py-5 sm:px-8">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-ink">
                   {category}
                 </h3>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <ul className="mt-3 space-y-2.5">
                   {providedByCategory[category]!.map((item) => (
-                    <Card key={item.label} className="border-mint/40 bg-mint/10">
-                      <CardContent className="flex items-center gap-3 py-4">
-                        <CheckCircle2
-                          aria-hidden
-                          className="size-5 shrink-0 text-royal"
-                        />
-                        <span className="text-sm font-medium text-midnight">
-                          {item.label}
-                        </span>
-                      </CardContent>
-                    </Card>
+                    <li key={item.label} className="flex items-center gap-3">
+                      <span
+                        aria-hidden
+                        className="flex size-5 shrink-0 items-center justify-center rounded-full bg-mint"
+                      >
+                        <Check className="size-3 text-midnight" strokeWidth={3} />
+                      </span>
+                      <span className="text-sm font-medium text-ink">
+                        {item.label}
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
-            )
-          )}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Potential opportunities */}
       <section>
-        <h2 className="text-xl font-semibold text-midnight sm:text-2xl">
-          Potential opportunities
+        <p className="kicker">Potential opportunities</p>
+        <h2 className="mt-1 text-lg font-semibold text-midnight sm:text-xl">
+          Where you could broaden support
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <p className="mt-2 max-w-2xl text-sm text-muted-ink">
           Areas that may be worth exploring to look after your people a little further.
         </p>
 
         <div className="mt-6 space-y-8">
-          {CATEGORY_ORDER.filter((category) => opportunitiesByCategory[category]?.length).map(
-            (category) => (
-              <div key={category}>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {category}
-                </h3>
-                <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                  {opportunitiesByCategory[category]!.map((item) => {
-                    const copy = OPPORTUNITY_COPY[item.label] ?? DEFAULT_COPY;
-                    return (
-                      <Card
-                        key={item.label}
-                        className="flex flex-col border-slate-200 p-5 shadow-sm transition-shadow hover:shadow-md"
+          {opportunityCategories.map((category) => (
+            <div key={category}>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-ink">
+                {category}
+              </h3>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                {opportunitiesByCategory[category]!.map((item) => {
+                  const copy = OPPORTUNITY_COPY[item.label] ?? DEFAULT_COPY;
+                  return (
+                    <Card
+                      key={item.label}
+                      className="flex flex-col p-5 transition-shadow hover:shadow-soft-lg"
+                    >
+                      <h4 className="font-semibold text-midnight">{item.label}</h4>
+                      <p className="mt-1.5 text-sm text-muted-ink">
+                        {copy.notIdentified}
+                      </p>
+                      <p className="mt-3 text-sm text-ink/80">
+                        <span className="font-medium text-midnight">
+                          Why consider it:{" "}
+                        </span>
+                        {copy.why}
+                      </p>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 gap-2 self-start border-royal text-royal hover:bg-royal/5 hover:text-royal"
                       >
-                        <h4 className="font-semibold text-midnight">{item.label}</h4>
-                        <p className="mt-1.5 text-sm text-slate-500">
-                          {copy.notIdentified}
-                        </p>
-                        <p className="mt-3 text-sm text-slate-700">
-                          <span className="font-medium text-midnight">
-                            Why consider it:{" "}
-                          </span>
-                          {copy.why}
-                        </p>
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="sm"
-                          className="mt-4 gap-2 self-start border-royal text-royal hover:bg-royal/5 hover:text-royal"
-                        >
-                          <Link href={recommendationHref}>
-                            Explore with CoverSure
-                            <ArrowRight className="size-4" />
-                          </Link>
-                        </Button>
-                      </Card>
-                    );
-                  })}
-                </div>
+                        <Link href={recommendationHref}>
+                          Explore with CoverSure
+                          <ArrowRight className="size-4" />
+                        </Link>
+                      </Button>
+                    </Card>
+                  );
+                })}
               </div>
-            )
-          )}
+            </div>
+          ))}
         </div>
       </section>
     </div>
