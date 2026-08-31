@@ -17,41 +17,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CoverageTable } from "@/components/coverage/CoverageTable";
 import { CategoryScoreBar } from "@/components/score/CategoryScoreBar";
+import { Meter, METER_COLOR, type MeterLevel } from "@/components/score/Meter";
+import { Timeline } from "@/components/quotes/Timeline";
 import { PriorityBadge } from "@/components/common/PriorityBadge";
 import { AssessmentDisclaimer } from "@/components/common/AssessmentDisclaimer";
 import { SEVERITY_LABELS } from "@/lib/language";
-import { TONE_COLOR } from "@/lib/score";
 import { useSession } from "@/lib/store";
 import { demoCompany } from "@/lib/demo-data";
-import type { RequestStage, Severity } from "@/lib/types";
+import type { Severity } from "@/lib/types";
 
 export interface AdminSmeDetailPageProps {
   params: { smeId: string };
 }
 
-/** Same tone mapping RiskCard uses, kept local since this view stays a
- * compact list rather than the full expandable RiskCard. */
-const SEVERITY_TONE: Record<Severity, keyof typeof TONE_COLOR | "neutral"> = {
-  high: "high",
-  attention: "attention",
-  review: "neutral",
-  good: "good",
-};
-
-function severityColor(severity: Severity): string {
-  const tone = SEVERITY_TONE[severity];
-  return tone === "neutral" ? "#64748B" : TONE_COLOR[tone];
-}
-
-/** Display labels for RequestStage — mirrors src/app/admin/page.tsx and
- * src/components/quotes/Timeline.tsx. */
-const STAGE_LABELS: Record<RequestStage, string> = {
-  "requirement-identified": "Requirement identified",
-  "request-submitted": "Request submitted",
-  "options-prepared": "Options being prepared",
-  "quote-received": "Quote received",
-  decision: "Decision",
-  activated: "Activated",
+/** Severity -> Meter level, same mapping RiskCard uses (src/components/risk/RiskCard.tsx):
+ * 1 = relatively well protected, 4 = high attention. Visual mapping only. */
+const SEVERITY_LEVEL: Record<Severity, MeterLevel> = {
+  good: 1,
+  review: 2,
+  attention: 3,
+  high: 4,
 };
 
 /** Representative analysed-document categories — mirrors the categories
@@ -89,11 +74,31 @@ interface StatTileProps {
 
 function StatTile({ label, value }: StatTileProps) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div className="rounded-lg border border-line bg-app-bg px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-ink">
         {label}
       </p>
       <p className="mt-1 text-lg font-semibold text-midnight">{value}</p>
+    </div>
+  );
+}
+
+interface SectionHeadProps {
+  kicker: string;
+  title: string;
+  description?: string;
+}
+
+/** Shared section header — kicker + title, matching the customer app's
+ * section-head convention (e.g. src/app/app/protection/page.tsx). */
+function SectionHead({ kicker, title, description }: SectionHeadProps) {
+  return (
+    <div>
+      <p className="kicker">{kicker}</p>
+      <h2 className="mt-1 text-lg font-semibold text-midnight">{title}</h2>
+      {description && (
+        <p className="mt-1 text-sm text-muted-ink">{description}</p>
+      )}
     </div>
   );
 }
@@ -127,7 +132,7 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
     <div>
       <Link
         href="/admin"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-royal"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-ink hover:text-royal"
       >
         <ArrowLeft className="size-4 shrink-0" aria-hidden />
         Back to pipeline
@@ -137,20 +142,21 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
       {/* 1. Business profile                                         */}
       {/* ---------------------------------------------------------- */}
       <div className="mt-4">
-        <h1 className="text-2xl font-semibold text-midnight sm:text-3xl">
+        <p className="kicker">Internal · SME profile</p>
+        <h1 className="mt-1 text-2xl font-semibold text-midnight sm:text-3xl">
           {profile.name}
         </h1>
-        <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+        <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-ink">
           <span className="flex items-center gap-1.5">
-            <Building2 className="size-4 shrink-0 text-slate-400" aria-hidden />
+            <Building2 className="size-4 shrink-0 text-muted-ink" aria-hidden />
             {profile.industry}
           </span>
           <span className="flex items-center gap-1.5">
-            <MapPin className="size-4 shrink-0 text-slate-400" aria-hidden />
+            <MapPin className="size-4 shrink-0 text-muted-ink" aria-hidden />
             {profile.location}
           </span>
           <span className="flex items-center gap-1.5">
-            <CalendarClock className="size-4 shrink-0 text-slate-400" aria-hidden />
+            <CalendarClock className="size-4 shrink-0 text-muted-ink" aria-hidden />
             {profile.yearsOperating} years operating
           </span>
         </p>
@@ -166,17 +172,18 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
       {/* ---------------------------------------------------------- */}
       {/* 2. Documents                                                */}
       {/* ---------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-midnight">Documents</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Categories analysed as part of the assessment.
-        </p>
+      <section className="mt-10">
+        <SectionHead
+          kicker="Documents"
+          title="Documents"
+          description="Categories analysed as part of the assessment."
+        />
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {DOCUMENT_CATEGORIES.map((cat) => (
-            <Card key={cat.key} className="border-slate-200">
+            <Card key={cat.key}>
               <CardContent className="flex items-center justify-between gap-2 p-4">
                 <span className="flex items-center gap-2 text-sm font-medium text-midnight">
-                  <FileText className="size-4 shrink-0 text-slate-400" aria-hidden />
+                  <FileText className="size-4 shrink-0 text-muted-ink" aria-hidden />
                   {cat.title}
                 </span>
                 <Badge
@@ -191,7 +198,7 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
           ))}
         </div>
         {uploadedDocs.length > 0 && (
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-muted-ink">
             Plus {uploadedDocs.length} document
             {uploadedDocs.length === 1 ? "" : "s"} shared this session.
           </p>
@@ -201,13 +208,13 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
       {/* ---------------------------------------------------------- */}
       {/* 3. Assessment                                               */}
       {/* ---------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-midnight">Assessment</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Indicative scores at a glance — Business Protection and People &amp;
-          Benefits.
-        </p>
-        <Card className="mt-3 border-slate-200">
+      <section className="mt-10">
+        <SectionHead
+          kicker="Assessment"
+          title="Assessment"
+          description="Indicative scores at a glance — Business Protection and People & Benefits."
+        />
+        <Card className="mt-3">
           <CardContent className="grid gap-5 p-5 sm:grid-cols-3">
             <CategoryScoreBar label="Protection Score" score={scores.overall} />
             <CategoryScoreBar label="People Score" score={demoCompany.benefits.peopleScore} />
@@ -219,44 +226,41 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
       {/* ---------------------------------------------------------- */}
       {/* 4. Coverage                                                 */}
       {/* ---------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-midnight">Coverage</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Cover identified in the documents reviewed.
-        </p>
-        <Card className="mt-3 border-slate-200">
-          <CardContent className="p-0">
-            <CoverageTable lines={coverage} />
-          </CardContent>
-        </Card>
+      <section className="mt-10">
+        <SectionHead
+          kicker="Coverage"
+          title="Coverage"
+          description="Cover identified in the documents reviewed."
+        />
+        <div className="mt-3">
+          <CoverageTable lines={coverage} />
+        </div>
       </section>
 
       {/* ---------------------------------------------------------- */}
       {/* 5. Risks                                                    */}
       {/* ---------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-midnight">Risks</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Gaps and areas that may warrant review.
-        </p>
-        <Card className="mt-3 border-slate-200">
-          <CardContent className="divide-y divide-slate-100 p-0">
+      <section className="mt-10">
+        <SectionHead
+          kicker="Risks"
+          title="Risks"
+          description="Gaps and areas that may warrant review."
+        />
+        <Card className="mt-3">
+          <CardContent className="divide-y divide-line p-0">
             {risks.map((risk) => {
-              const color = severityColor(risk.severity);
+              const level = SEVERITY_LEVEL[risk.severity];
+              const color = METER_COLOR[level];
               return (
-                <div key={risk.key} className="flex items-start gap-3 p-4">
-                  <span
-                    aria-hidden
-                    className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
+                <div key={risk.key} className="flex items-start gap-4 p-4">
+                  <Meter level={level} className="mt-1 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-midnight">
+                      <span className="font-semibold text-midnight">
                         {risk.title}
                       </span>
                       <span
-                        className="rounded-full border px-2 py-0.5 text-xs font-medium"
+                        className="rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
                         style={{
                           backgroundColor: `${color}1F`,
                           color,
@@ -266,7 +270,7 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
                         {SEVERITY_LABELS[risk.severity]}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-slate-600">{risk.why}</p>
+                    <p className="mt-1 text-sm text-muted-ink">{risk.why}</p>
                   </div>
                 </div>
               );
@@ -278,19 +282,18 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
       {/* ---------------------------------------------------------- */}
       {/* 6. Recommendations                                         */}
       {/* ---------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-midnight">
-          Recommendations
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          What CoverSure identified as worth exploring.
-        </p>
+      <section className="mt-10">
+        <SectionHead
+          kicker="Recommendations"
+          title="Recommendations"
+          description="What CoverSure identified as worth exploring."
+        />
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {recommendations.map((reco) => (
-            <Card key={reco.id} className="border-slate-200">
+            <Card key={reco.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-slate-400">
+                  <span className="text-xs font-semibold text-muted-ink">
                     {reco.index}
                   </span>
                   <PriorityBadge priority={reco.priority} />
@@ -299,7 +302,7 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
                   {reco.title}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 text-sm text-slate-600">
+              <CardContent className="pt-0 text-sm text-muted-ink">
                 {reco.recommended}
               </CardContent>
             </Card>
@@ -310,72 +313,72 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
       {/* ---------------------------------------------------------- */}
       {/* 7. Requests                                                 */}
       {/* ---------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-midnight">Requests</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Live requests this business has raised with CoverSure, including
-          the contact details they shared.
-        </p>
-        <Card className="mt-3 border-slate-200">
+      <section className="mt-10">
+        <SectionHead
+          kicker="Requests"
+          title="Requests"
+          description="Live requests this business has raised with CoverSure, including the contact details they shared."
+        />
+        <Card className="mt-3">
           <CardContent className="p-0">
             {submittedRequests.length === 0 ? (
-              <div className="flex items-center gap-2 p-6 text-sm text-slate-500">
-                <Inbox className="size-4 shrink-0 text-slate-400" aria-hidden />
+              <div className="flex items-center gap-2 p-6 text-sm text-muted-ink">
+                <Inbox className="size-4 shrink-0 text-muted-ink" aria-hidden />
                 No requests yet
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-line">
                 {submittedRequests.map((request) => {
                   const recommendation = recommendations.find(
                     (r) => r.id === request.recommendationId
                   );
                   return (
-                    <div key={request.id} className="p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div key={request.id} className="p-5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="font-medium text-midnight">
+                          <p className="font-semibold text-midnight">
                             {request.solution}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted-ink">
                             {recommendation
                               ? `From: ${recommendation.title}`
                               : "Recommendation not found"}
                           </p>
                         </div>
-                        <span className="inline-flex items-center rounded-full border border-royal/30 bg-royal/5 px-2.5 py-0.5 text-xs font-medium text-royal">
-                          {STAGE_LABELS[request.stage]}
-                        </span>
-                      </div>
-
-                      <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                        <span className="font-medium text-slate-700">
-                          {request.contactName}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <CalendarClock
-                            className="size-3.5 shrink-0 text-slate-400"
-                            aria-hidden
-                          />
+                        <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-app-bg px-3 py-1 text-xs font-medium text-muted-ink">
+                          <CalendarClock className="size-3.5 shrink-0" aria-hidden />
                           {formatSubmittedAt(request.submittedAt)}
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <Phone className="size-3.5 shrink-0 text-slate-400" aria-hidden />
-                          {request.phone}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Mail className="size-3.5 shrink-0 text-slate-400" aria-hidden />
-                          {request.email}
-                        </span>
-                        <span>
-                          Preferred contact: {request.preferredContact}
-                        </span>
                       </div>
 
-                      {request.note && (
-                        <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                          &ldquo;{request.note}&rdquo;
+                      <div className="mt-4">
+                        <Timeline stage={request.stage} />
+                      </div>
+
+                      <div className="mt-4 rounded-xl border border-line bg-app-bg px-4 py-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-royal">
+                          Contact details
                         </p>
-                      )}
+                        <div className="mt-2.5 grid gap-2 text-sm text-ink sm:grid-cols-2">
+                          <span className="font-medium text-midnight">
+                            {request.contactName}
+                          </span>
+                          <span>Prefers {request.preferredContact}</span>
+                          <span className="flex items-center gap-1.5">
+                            <Phone className="size-3.5 shrink-0 text-muted-ink" aria-hidden />
+                            {request.phone}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Mail className="size-3.5 shrink-0 text-muted-ink" aria-hidden />
+                            {request.email}
+                          </span>
+                        </div>
+                        {request.note && (
+                          <p className="mt-3 border-t border-line pt-3 text-sm text-muted-ink">
+                            &ldquo;{request.note}&rdquo;
+                          </p>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -385,7 +388,7 @@ export default function AdminSmeDetailPage({ params }: AdminSmeDetailPageProps) 
         </Card>
       </section>
 
-      <AssessmentDisclaimer className="mt-8" />
+      <AssessmentDisclaimer className="mt-10" />
     </div>
   );
 }

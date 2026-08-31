@@ -14,8 +14,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-800 bg-midnight">
+    <div className="min-h-screen bg-app-bg">
+      <header className="border-b border-white/10 bg-midnight">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <Logo variant="reverse" className="h-6" />
@@ -29,7 +29,7 @@ export default function AdminLayout({
             </span>
             <Link
               href="/app/overview"
-              className="text-xs font-medium text-white/60 hover:text-white"
+              className="text-xs font-medium text-white/60 transition-colors hover:text-white"
             >
               Exit to customer app
             </Link>
