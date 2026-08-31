@@ -36,28 +36,31 @@ function scrollToHow(e: React.MouseEvent<HTMLAnchorElement>) {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-app-bg">
       {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+      <header className="sticky top-0 z-20 border-b border-line bg-white/94 backdrop-blur-md">
+        <div className="cs-container flex items-center justify-between py-4">
           <Logo />
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        {/* Soft brand-colour glow, decorative only */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-40 right-[-10%] h-[420px] w-[420px] rounded-full bg-electric/10 blur-3xl" />
-          <div className="absolute top-20 left-[-10%] h-[320px] w-[320px] rounded-full bg-mint/20 blur-3xl" />
-        </div>
-
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-24 text-center md:py-32">
-          <motion.h1
+      {/* Hero — authoritative midnight -> royal gradient band, PI/D&O hero treatment */}
+      <section className="bg-gradient-to-br from-midnight to-royal">
+        <div className="cs-container flex flex-col items-center py-24 text-center md:py-32">
+          <motion.span
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-4xl font-bold tracking-tight text-midnight sm:text-5xl md:text-6xl"
+            className="eyebrow-pill"
+          >
+            AI-powered protection
+          </motion.span>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.06 }}
+            className="h-hero mt-5 text-white"
           >
             CoverSure Business
           </motion.h1>
@@ -65,17 +68,8 @@ export default function LandingPage() {
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.08 }}
-            className="mt-4 text-xl font-medium text-royal sm:text-2xl"
-          >
-            AI-powered protection for businesses and their people
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.16 }}
-            className="mt-6 max-w-2xl text-base text-slate-600 sm:text-lg"
+            className="mt-6 max-w-2xl text-base text-white/80 sm:text-lg"
           >
             Assess business risks, identify protection gaps, provide employee
             benefits, and manage insurance and wellbeing — all in one platform.
@@ -87,13 +81,7 @@ export default function LandingPage() {
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.24 }}
             className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
           >
-            <Link
-              href="/onboarding"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "h-12 gap-2 bg-electric px-8 text-base text-white shadow-md hover:bg-royal"
-              )}
-            >
+            <Link href="/onboarding" className={cn(buttonVariants({ size: "lg" }), "gap-2")}>
               Assess My Business
               <ArrowRight className="size-4" />
             </Link>
@@ -102,7 +90,7 @@ export default function LandingPage() {
               onClick={scrollToHow}
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "h-12 border-midnight/15 px-8 text-base text-midnight hover:bg-midnight/5"
+                "border-white/30 text-white hover:bg-white/10 hover:text-white"
               )}
             >
               See How It Works
@@ -112,10 +100,11 @@ export default function LandingPage() {
       </section>
 
       {/* Pillars */}
-      <section id="how" className="border-t border-slate-100 bg-slate-50/60 py-20">
-        <div className="mx-auto w-full max-w-6xl px-6">
+      <section id="how" className="border-t border-line py-20">
+        <div className="cs-container">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-semibold text-midnight sm:text-3xl">
+            <p className="kicker">How it works</p>
+            <h2 className="h-section mt-2 text-midnight">
               One platform, three commitments
             </h2>
           </div>
@@ -124,13 +113,13 @@ export default function LandingPage() {
             {PILLARS.map(({ icon: Icon, title, description }) => (
               <Card
                 key={title}
-                className="border-slate-200 p-8 text-center transition-shadow hover:shadow-lg"
+                className="rounded-2xl p-8 text-center transition-shadow hover:shadow-soft-lg"
               >
                 <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-electric/10 text-electric">
                   <Icon className="size-6" />
                 </div>
                 <h3 className="mt-5 text-lg font-semibold text-midnight">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                <p className="mt-2 text-[14.5px] leading-relaxed text-muted-ink">
                   {description}
                 </p>
               </Card>
@@ -140,8 +129,8 @@ export default function LandingPage() {
       </section>
 
       {/* Journey strip */}
-      <section className="border-t border-slate-100 py-16">
-        <div className="mx-auto w-full max-w-6xl px-6">
+      <section className="border-t border-line py-16">
+        <div className="cs-container">
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:gap-2">
             {JOURNEY_STEPS.map((step, i) => (
               <div key={step} className="flex items-center gap-2 sm:gap-3">
@@ -155,7 +144,7 @@ export default function LandingPage() {
                 </div>
                 {i < JOURNEY_STEPS.length - 1 ? (
                   <ArrowRight
-                    className="hidden size-4 shrink-0 text-slate-300 sm:block"
+                    className="hidden size-4 shrink-0 text-line sm:block"
                     aria-hidden="true"
                   />
                 ) : null}
@@ -166,8 +155,8 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 py-8">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 text-sm text-slate-400">
+      <footer className="border-t border-line py-8">
+        <div className="cs-container flex items-center justify-between text-sm text-muted-ink">
           <Logo className="h-6 opacity-70" />
           <span>© 2026 CoverSure</span>
         </div>

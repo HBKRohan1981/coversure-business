@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -25,22 +25,26 @@ export default function OnboardingPage() {
     router.push("/onboarding/upload");
   }
 
+  const fieldLabel = "text-[13.5px] font-medium text-midnight";
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold tracking-tight text-midnight sm:text-4xl">
+    <div className="cs-form">
+      <p className="kicker">Business Assessment</p>
+      <h1 className="h-panel mt-2 text-midnight">
         Let&apos;s understand your business
       </h1>
-      <p className="mt-3 text-base text-slate-600">
+      <p className="mt-3 text-[15px] leading-relaxed text-muted-ink">
         Tell us a little about your business. You can upload your documents
         and we&apos;ll do the heavy lifting.
       </p>
 
-      <Card className="mt-8 border-slate-200">
-        <CardHeader className="pb-0" />
-        <CardContent className="pt-6">
+      <Card className="mt-8 rounded-2xl border-line shadow-soft">
+        <CardContent className="px-[30px] py-[30px] sm:px-[34px] sm:py-[34px]">
           <form onSubmit={handleContinue} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="businessName">Business name</Label>
+              <Label htmlFor="businessName" className={fieldLabel}>
+                Business name
+              </Label>
               <Input
                 id="businessName"
                 value={businessName}
@@ -50,7 +54,9 @@ export default function OnboardingPage() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
+                <Label htmlFor="industry" className={fieldLabel}>
+                  Industry
+                </Label>
                 <Input
                   id="industry"
                   value={industry}
@@ -58,7 +64,9 @@ export default function OnboardingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location" className={fieldLabel}>
+                  Location
+                </Label>
                 <Input
                   id="location"
                   value={location}
@@ -69,7 +77,9 @@ export default function OnboardingPage() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="turnover">Annual turnover</Label>
+                <Label htmlFor="turnover" className={fieldLabel}>
+                  Annual turnover
+                </Label>
                 <Input
                   id="turnover"
                   value={turnover}
@@ -77,7 +87,9 @@ export default function OnboardingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="employees">Number of employees</Label>
+                <Label htmlFor="employees" className={fieldLabel}>
+                  Number of employees
+                </Label>
                 <Input
                   id="employees"
                   type="number"
@@ -88,18 +100,14 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
               <Link
                 href="/onboarding/upload"
                 className="text-sm font-medium text-royal underline-offset-4 hover:underline"
               >
                 Upload your documents instead
               </Link>
-              <Button
-                type="submit"
-                size="lg"
-                className="h-12 gap-2 bg-electric px-8 text-base text-white shadow-md hover:bg-royal sm:w-auto"
-              >
+              <Button type="submit" size="lg" className="gap-2 sm:w-auto">
                 Continue
                 <ArrowRight className="size-4" />
               </Button>

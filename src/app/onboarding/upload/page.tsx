@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileSearch } from "lucide-react";
 import { UploadDropzone } from "@/components/upload/UploadDropzone";
 import { ProcessingSteps } from "@/components/upload/ProcessingSteps";
 import { useSession } from "@/lib/store";
@@ -67,16 +67,17 @@ export default function UploadPage() {
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.3 }}
         >
-          <h1 className="text-3xl font-bold tracking-tight text-midnight sm:text-4xl">
+          <p className="kicker">Business Assessment</p>
+          <h1 className="h-panel mt-2 text-midnight">
             Give us the information you already have
           </h1>
-          <p className="mt-3 text-base text-slate-600">
+          <p className="mt-3 text-[15px] leading-relaxed text-muted-ink">
             We&apos;ll read what you share and build a picture of your
             business as it stands today. Nothing here is required &mdash;
             share what&apos;s on hand.
           </p>
 
-          <div className="mt-8 space-y-5">
+          <div className="mt-8 space-y-4">
             <UploadDropzone
               category="financials"
               label="Upload audited financials or financial statements."
@@ -94,13 +95,8 @@ export default function UploadPage() {
             />
           </div>
 
-          <div className="mt-8 flex items-center justify-end">
-            <Button
-              type="button"
-              size="lg"
-              onClick={handleAnalyse}
-              className="h-12 gap-2 bg-electric px-8 text-base text-white shadow-md hover:bg-royal"
-            >
+          <div className="mt-8 flex items-center justify-end border-t border-line pt-6">
+            <Button type="button" size="lg" onClick={handleAnalyse} className="gap-2">
               Analyse
               <ArrowRight className="size-4" />
             </Button>
@@ -115,28 +111,24 @@ export default function UploadPage() {
           className="flex flex-col items-center text-center"
         >
           <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-midnight/5"
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="flex size-14 items-center justify-center rounded-2xl border border-line bg-white shadow-soft"
           >
-            <motion.div
-              animate={{ opacity: [0.6, 1, 0.6] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <ShieldCheck className="size-8 text-royal" aria-hidden />
-            </motion.div>
+            <FileSearch className="size-6 text-royal" aria-hidden />
           </motion.div>
 
-          <h1 className="mt-6 text-2xl font-bold tracking-tight text-midnight sm:text-3xl">
+          <p className="kicker mt-5">Business Assessment</p>
+          <h1 className="h-panel mt-2 text-midnight">
             Reading your documents&hellip;
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-[14.5px] text-muted-ink">
             We&apos;re putting together a picture of your business.
           </p>
 
-          <Card className="mt-8 w-full border-slate-200 text-left">
-            <CardContent className="py-6">
+          <Card className="mt-8 w-full rounded-2xl border-line text-left shadow-soft">
+            <CardContent className="px-7 py-7">
               <ProcessingSteps steps={STEPS} onComplete={handleDone} />
             </CardContent>
           </Card>

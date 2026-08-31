@@ -40,38 +40,44 @@ export function ProcessingSteps({ steps, onComplete }: ProcessingStepsProps) {
   }, [completedCount, steps.length, onComplete]);
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-4">
       {steps.map((step, i) => {
         const done = i < completedCount;
         const active = i === completedCount;
         return (
-          <li key={step} className="flex items-center gap-3">
-            <motion.span
-              initial={false}
-              animate={{
-                backgroundColor: done ? "#1E56FF" : "#E2E8F0",
-                scale: active ? 1.08 : 1,
-              }}
-              transition={{ duration: 0.25 }}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-            >
-              {done && (
+          <li key={step} className="flex items-center gap-3.5">
+            <span className="flex size-6 shrink-0 items-center justify-center">
+              {done ? (
                 <motion.span
-                  initial={{ scale: 0, opacity: 0 }}
+                  initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.2 }}
-                  className="flex items-center justify-center"
+                  className="flex size-6 items-center justify-center rounded-full bg-electric"
                 >
                   <Check className="h-3.5 w-3.5 text-white" aria-hidden />
                 </motion.span>
+              ) : active ? (
+                <span
+                  aria-hidden
+                  className="size-5 animate-spin rounded-full border-2 border-[rgba(30,86,255,.18)] border-t-electric"
+                />
+              ) : (
+                <span aria-hidden className="size-2 rounded-full bg-line" />
               )}
-            </motion.span>
+            </span>
             <span
               className={cn(
-                "text-sm",
-                done ? "font-medium text-midnight" : "text-slate-500"
+                "text-[14.5px] transition-colors",
+                done && "font-medium text-midnight",
+                active && "font-medium text-ink",
+                !done && !active && "text-muted-ink"
               )}
             >
+              {active && (
+                <span aria-hidden className="mr-1.5 font-semibold text-electric">
+                  &rarr;
+                </span>
+              )}
               {step}
             </span>
           </li>
