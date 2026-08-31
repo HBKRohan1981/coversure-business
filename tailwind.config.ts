@@ -14,6 +14,12 @@ const config: Config = {
   			royal: '#0032C8',
   			electric: '#1E56FF',
   			mint: '#A2FAA3',
+  			ink: '#0e1a4a',
+  			'muted-ink': '#5a6489',
+  			line: '#e3e8f6',
+  			'app-bg': '#f6f8fe',
+  			danger: '#c0392b',
+  			amber: '#b45309',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -70,7 +76,13 @@ const config: Config = {
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			sm: 'calc(var(--radius) - 4px)',
+  			xl: '16px',
+  			'2xl': '20px'
+  		},
+  		boxShadow: {
+  			soft: '0 8px 30px rgba(0,25,101,.08)',
+  			'soft-lg': '0 18px 50px rgba(0,25,101,.12)'
   		}
   	}
   },
