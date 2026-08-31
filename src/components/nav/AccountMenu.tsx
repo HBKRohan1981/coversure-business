@@ -26,20 +26,20 @@ export function AccountMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 outline-none transition-colors hover:bg-slate-100 focus-visible:ring-1 focus-visible:ring-ring">
+      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-line/40 focus-visible:ring-[3px] focus-visible:ring-[rgba(30,86,255,.12)]">
         <Avatar className="h-8 w-8">
           <AvatarFallback className="bg-midnight text-xs font-semibold text-white">
             AM
           </AvatarFallback>
         </Avatar>
         <span className="hidden sm:inline">{ACCOUNT_NAME}</span>
-        <ChevronDown className="h-4 w-4 text-slate-400" />
+        <ChevronDown className="h-4 w-4 text-muted-ink" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>{ACCOUNT_NAME}</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-midnight">{ACCOUNT_NAME}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleResetDemo}>
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="h-4 w-4 text-muted-ink" />
           Reset demo
         </DropdownMenuItem>
       </DropdownMenuContent>

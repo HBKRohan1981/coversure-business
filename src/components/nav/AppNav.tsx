@@ -43,7 +43,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex flex-col gap-0.5">
       {NAV_ITEMS.map((item) => {
         const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
         const Icon = item.icon;
@@ -53,13 +53,18 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-colors",
               isActive
-                ? "bg-midnight text-white"
-                : "text-slate-600 hover:bg-slate-100 hover:text-midnight"
+                ? "border-electric bg-electric/5 text-midnight"
+                : "border-transparent text-muted-ink hover:bg-line/40 hover:text-midnight"
             )}
           >
-            <Icon className="h-4 w-4 shrink-0" />
+            <Icon
+              className={cn(
+                "h-4 w-4 shrink-0",
+                isActive ? "text-electric" : "text-muted-ink"
+              )}
+            />
             <span>{item.label}</span>
           </Link>
         );
@@ -81,10 +86,10 @@ export function MobileNav() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="Open navigation">
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5 text-muted-ink" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72">
+      <SheetContent side="left" className="w-72 border-line bg-white">
         <SheetHeader>
           <SheetTitle asChild>
             <Logo className="h-7" />
