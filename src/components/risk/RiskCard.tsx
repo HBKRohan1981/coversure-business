@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Meter, METER_COLOR, type MeterLevel } from "@/components/score/Meter";
 import { DeterminationTrail } from "@/components/common/DeterminationTrail";
+import { EvidenceCallout } from "@/components/common/EvidenceCallout";
 import { cn } from "@/lib/utils";
 import { SEVERITY_LABELS } from "@/lib/language";
 import type { Risk, Severity } from "@/lib/types";
@@ -81,16 +82,11 @@ export function RiskCard({ risk }: RiskCardProps) {
 
           <section className="space-y-1.5">
             <h4 className="text-sm font-semibold text-midnight">Evidence</h4>
-            <ul className="space-y-1.5">
+            <div className="space-y-1.5">
               {risk.evidence.map((item, i) => (
-                <li
-                  key={i}
-                  className="rounded-lg border-l-2 border-electric/35 bg-app-bg px-3 py-2 text-[12.5px] text-muted-ink"
-                >
-                  {item}
-                </li>
+                <EvidenceCallout key={i}>{item}</EvidenceCallout>
               ))}
-            </ul>
+            </div>
           </section>
 
           <section className="space-y-1.5">

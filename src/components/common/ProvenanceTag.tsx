@@ -1,16 +1,21 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Provenance } from "@/lib/types";
 
+/**
+ * PI/D&O "source pill" treatment (see .superpowers/sdd/pido-design-reference.md,
+ * "Provenance / reasoning"). Mapping kept to the product's 3 kinds:
+ * FACT -> src-doc (royal on royal-tint), ASSESSMENT -> src-ai (amber on
+ * amber-tint, an inference), RECOMMENDATION -> src-user (mint-tinted).
+ */
 const provenanceTagVariants = cva(
-  "inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap",
+  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide whitespace-nowrap",
   {
     variants: {
       kind: {
-        FACT: "bg-slate-100 text-slate-600 border-slate-200",
-        ASSESSMENT: "bg-royal/10 text-royal border-royal/20",
-        RECOMMENDATION: "bg-mint/20 text-emerald-700 border-mint/50",
+        FACT: "bg-[rgba(30,86,255,.12)] text-royal",
+        ASSESSMENT: "bg-[#fff4e5] text-amber",
+        RECOMMENDATION: "bg-[rgba(162,250,163,.4)] text-[#14532d]",
       } satisfies Record<Provenance, string>,
     },
     defaultVariants: {
@@ -24,11 +29,11 @@ export interface ProvenanceTagProps extends VariantProps<typeof provenanceTagVar
   className?: string;
 }
 
-/** Small uppercase tag marking a piece of copy as FACT / ASSESSMENT / RECOMMENDATION. */
+/** Small uppercase source pill marking a piece of copy as FACT / ASSESSMENT / RECOMMENDATION. */
 export function ProvenanceTag({ kind, className }: ProvenanceTagProps) {
   return (
-    <Badge variant="outline" className={cn(provenanceTagVariants({ kind }), className)}>
+    <span className={cn(provenanceTagVariants({ kind }), className)}>
       {kind}
-    </Badge>
+    </span>
   );
 }
