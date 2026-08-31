@@ -7,35 +7,29 @@ interface LogoProps {
 }
 
 /**
- * CoverSure wordmark: an inline SVG shield (three converging segments, currentColor)
- * next to the all-caps "COVERSURE" wordmark. No image assets.
+ * CoverSure logo — the official brand asset (shield emblem + COVERSURE wordmark).
+ * Served from /public/coversure-logo.png. `variant="reverse"` renders it white
+ * for dark backgrounds (e.g. the internal admin header). Height is controlled by
+ * the wrapper's className (default h-8 / 32px, matching the CoverSure logo spec);
+ * the image scales to it via h-full w-auto.
  */
-export const Logo = forwardRef<HTMLDivElement, LogoProps & React.HTMLAttributes<HTMLDivElement>>(
-  ({ variant = "default", className, ...rest }, ref) => {
-    const colorClass = variant === "reverse" ? "text-white" : "text-midnight";
-
-    return (
-      <div
-        ref={ref}
-        className={cn("flex items-center gap-2 h-8", colorClass, className)}
-        {...rest}
-      >
-        <svg
-          viewBox="0 0 32 32"
-          fill="none"
-          className="h-full w-auto shrink-0"
-          aria-hidden="true"
-        >
-          {/* Three converging segments forming a shield, meeting at the base point */}
-          <path d="M6 6 L13 6 L16 29 Q5 17 6 6 Z" fill="currentColor" opacity="0.45" />
-          <path d="M13 6 L19 6 L16 29 Z" fill="currentColor" opacity="0.75" />
-          <path d="M19 6 L26 6 Q27 17 16 29 Z" fill="currentColor" opacity="1" />
-        </svg>
-        <span className="font-sans font-semibold tracking-wide text-lg leading-none whitespace-nowrap">
-          COVERSURE
-        </span>
-      </div>
-    );
-  }
-);
+export const Logo = forwardRef<
+  HTMLDivElement,
+  LogoProps & React.HTMLAttributes<HTMLDivElement>
+>(({ variant = "default", className, ...rest }, ref) => {
+  return (
+    <div ref={ref} className={cn("inline-flex items-center h-8", className)} {...rest}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset, exact-ratio, no optimization needed */}
+      <img
+        src="/coversure-logo.png"
+        alt="CoverSure"
+        draggable={false}
+        className={cn(
+          "h-full w-auto select-none",
+          variant === "reverse" && "[filter:brightness(0)_invert(1)]"
+        )}
+      />
+    </div>
+  );
+});
 Logo.displayName = "Logo";
