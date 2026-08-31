@@ -77,7 +77,7 @@ export default function OnboardingLayout({
       </div>
 
       <main className="flex flex-1 justify-center px-6 py-12 md:py-16">
-        <div className="w-full max-w-xl">{children}</div>
+        <div className="w-full max-w-[640px]">{children}</div>
       </main>
     </div>
   );

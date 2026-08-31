@@ -71,8 +71,9 @@ export default function LandingPage() {
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.16 }}
             className="mt-6 max-w-2xl text-base text-white/80 sm:text-lg"
           >
-            Assess business risks, identify protection gaps, provide employee
-            benefits, and manage insurance and wellbeing — all in one platform.
+            AI-powered protection for businesses and their people. Assess
+            business risks, identify protection gaps, provide employee benefits,
+            and manage insurance and wellbeing — all in one platform.
           </motion.p>
 
           <motion.div
