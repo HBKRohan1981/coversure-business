@@ -16,7 +16,7 @@ export function scoreTone(n: number): ScoreTone {
  * status/priority atoms in src/components/coverage & src/components/common).
  */
 export const TONE_COLOR: Record<ScoreTone, string> = {
-  good: "#4FBF6B", // restrained emerald/mint tone
-  attention: "#D69A2D", // restrained amber
-  high: "#C24545", // restrained red
+  good: "#3F9D5C", // calm forest-green (mint hue family, text-safe contrast)
+  attention: "#B45309", // brand amber token — matches the desaturated meter palette
+  high: "#C0392B", // brand danger token — matches the desaturated meter palette
 };

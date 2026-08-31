@@ -1,75 +1,68 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Meter, METER_COLOR, type MeterLevel } from "@/components/score/Meter";
 import { DeterminationTrail } from "@/components/common/DeterminationTrail";
 import { cn } from "@/lib/utils";
 import { SEVERITY_LABELS } from "@/lib/language";
-import { TONE_COLOR } from "@/lib/score";
 import type { Risk, Severity } from "@/lib/types";
 
 export interface RiskCardProps {
   risk: Risk;
 }
 
-/** Which semantic tone bucket each risk severity renders in. */
-type SeverityTone = "good" | "attention" | "high" | "neutral";
-
-const SEVERITY_TONE: Record<Severity, SeverityTone> = {
-  high: "high",
-  attention: "attention",
-  review: "neutral",
-  good: "good",
+/**
+ * Severity -> Meter level. 1 = relatively well protected, 4 = high
+ * attention. Visual mapping only — does not touch severity/risk logic.
+ */
+const SEVERITY_LEVEL: Record<Severity, MeterLevel> = {
+  good: 1,
+  review: 2,
+  attention: 3,
+  high: 4,
 };
 
-function toneColor(tone: SeverityTone): string {
-  if (tone === "neutral") return "#64748B"; // slate-500
-  return TONE_COLOR[tone];
-}
-
 /**
- * Expandable risk card. Collapsed: severity dot + title + short summary.
+ * Expandable risk card. Collapsed: severity meter + title + short summary.
  * Expanded: why we flagged this / evidence / what you can do, plus the
  * determination trail. Simplest expand/collapse (useState + chevron) per
  * the D4 brief — no new shadcn primitive.
  */
 export function RiskCard({ risk }: RiskCardProps) {
   const [open, setOpen] = useState(false);
-  const color = toneColor(SEVERITY_TONE[risk.severity]);
+  const level = SEVERITY_LEVEL[risk.severity];
+  const color = METER_COLOR[level];
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden rounded-[18px] border-line shadow-soft">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-start gap-3 p-4 text-left"
+        className="flex w-full items-start gap-4 p-4 text-left"
       >
-        <span
-          aria-hidden
-          className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: color }}
-        />
+        <span className="flex shrink-0 flex-col items-start gap-1.5 pt-0.5">
+          <Meter level={level} />
+          <span
+            className="text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color }}
+          >
+            {SEVERITY_LABELS[risk.severity]}
+          </span>
+        </span>
         <span className="flex-1">
-          <span className="flex items-center gap-2">
-            <span className="font-semibold text-midnight">{risk.title}</span>
-            <span
-              className="rounded-full border px-2 py-0.5 text-xs font-medium"
-              style={severityBadgeStyle(color)}
-            >
-              {SEVERITY_LABELS[risk.severity]}
-            </span>
+          <span className="block font-semibold text-midnight">
+            {risk.title}
           </span>
-          <span className="mt-1 block text-sm text-slate-600">
-            {risk.why}
-          </span>
+          <span className="mt-1 block text-sm text-ink/80">{risk.why}</span>
         </span>
         <ChevronDown
           aria-hidden
           className={cn(
-            "mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform",
+            "mt-1 h-4 w-4 shrink-0 text-electric transition-transform",
             open && "rotate-180"
           )}
         />
@@ -83,14 +76,19 @@ export function RiskCard({ risk }: RiskCardProps) {
             <h4 className="text-sm font-semibold text-midnight">
               Why we flagged this
             </h4>
-            <p className="text-sm text-slate-600">{risk.why}</p>
+            <p className="text-sm text-ink/80">{risk.why}</p>
           </section>
 
           <section className="space-y-1.5">
             <h4 className="text-sm font-semibold text-midnight">Evidence</h4>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+            <ul className="space-y-1.5">
               {risk.evidence.map((item, i) => (
-                <li key={i}>{item}</li>
+                <li
+                  key={i}
+                  className="rounded-lg border-l-2 border-electric/35 bg-app-bg px-3 py-2 text-[12.5px] text-muted-ink"
+                >
+                  {item}
+                </li>
               ))}
             </ul>
           </section>
@@ -99,7 +97,7 @@ export function RiskCard({ risk }: RiskCardProps) {
             <h4 className="text-sm font-semibold text-midnight">
               What you can do
             </h4>
-            <p className="text-sm text-slate-600">{risk.whatYouCanDo}</p>
+            <p className="text-sm text-ink/80">{risk.whatYouCanDo}</p>
           </section>
 
           <DeterminationTrail determination={risk.determination} />
@@ -107,12 +105,4 @@ export function RiskCard({ risk }: RiskCardProps) {
       )}
     </Card>
   );
-}
-
-function severityBadgeStyle(hex: string): CSSProperties {
-  return {
-    backgroundColor: `${hex}1F`, // ~12% tint
-    color: hex,
-    borderColor: `${hex}4D`, // ~30% tint
-  };
 }
