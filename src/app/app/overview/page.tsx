@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Shield, HeartHandshake } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PriorityBadge } from "@/components/common/PriorityBadge";
-import { ScoreDial } from "@/components/score/ScoreDial";
+import { ScoreBand } from "@/components/score/ScoreBand";
 import { demoCompany } from "@/lib/demo-data";
 import { scoreTone, TONE_COLOR, type ScoreTone } from "@/lib/score";
 
-/** Business-protection tiles shown on the pillar card, in a fixed display order. */
+/** Business-protection tiles shown under the pillar band, in a fixed display order. */
 const PROTECTION_TILE_KEYS = ["property", "business-continuity", "liability", "cyber"] as const;
 
 /** Short tile status label per tone band (careful, non-absolute language). */
@@ -21,8 +20,16 @@ const TILE_TONE_LABEL: Record<ScoreTone, string> = {
 };
 
 /**
+ * Common legal-entity suffixes trimmed for a cleaner headline. Display-only —
+ * the underlying name is still read straight from demoCompany.profile.name.
+ */
+function displayName(legalName: string): string {
+  return legalName.replace(/\s+(pvt\.?\s*ltd\.?|private limited|ltd\.?|limited)\.?\s*$/i, "").trim();
+}
+
+/**
  * Overview (Screen 12) — the home that ties the whole CoverSure Business
- * story together. Two pillars, side by side:
+ * story together. Two pillars, presented as authoritative score bands:
  *   Business Protection (what could put my business at risk?)
  *   People & Benefits (how can I better protect and look after my people?)
  * ...converging into one prioritised list -> CoverSure can help.
@@ -44,185 +51,140 @@ export default function OverviewPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      {/* Header */}
-      <h1 className="text-2xl font-semibold text-midnight sm:text-3xl">
-        Good morning, {profile.name}
-      </h1>
-      <p className="mt-2 max-w-2xl text-sm text-slate-600">
-        Here&apos;s where things stand today — your business protection, your
-        people, and what may be worth prioritising next.
-      </p>
+      <div className="cs-container px-0">
+        {/* Header */}
+        <p className="kicker">Overview</p>
+        <h1 className="mt-1 text-2xl font-semibold text-midnight sm:text-3xl">
+          Good morning, {displayName(profile.name)}
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted-ink">
+          Here&apos;s where things stand today — your business protection, your
+          people, and what may be worth prioritising next.
+        </p>
 
-      {/* ------------------------------------------------------------ */}
-      {/* Two pillars                                                  */}
-      {/* ------------------------------------------------------------ */}
-      <div className="mt-8 grid gap-5 md:grid-cols-2">
-        {/* Pillar 1 — Business Protection */}
-        <Card className="group relative flex flex-col gap-5 border-slate-200 p-6 shadow-sm transition-shadow hover:shadow-md">
-          <Link
-            href="/app/protection"
-            className="absolute inset-0 z-10 rounded-xl"
-            aria-label="Go to Business Protection"
-          />
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-midnight/5 text-midnight">
-                <Shield aria-hidden className="size-4" />
-              </span>
-              <h2 className="font-semibold text-midnight">
-                Business Protection
-              </h2>
-            </div>
-            <ArrowUpRight
-              aria-hidden
-              className="size-4 text-slate-400 transition-colors group-hover:text-royal"
-            />
-          </div>
-
-          <div className="flex items-center gap-5">
-            <ScoreDial value={scores.overall} label="out of 100" size={104} />
-            <p className="text-sm text-slate-600">
-              {attentionCount > 0 ? (
-                <>
-                  <span className="font-semibold text-midnight">
-                    {attentionCount}{" "}
-                    {attentionCount === 1 ? "priority" : "priorities"}
-                  </span>{" "}
-                  may need attention based on the information reviewed.
-                </>
-              ) : (
-                "Your business appears relatively well protected based on the information reviewed."
-              )}
-            </p>
-          </div>
-
-          <div className="relative z-20 grid grid-cols-2 gap-2.5">
-            {protectionTiles.map((tile) => (
-              <Link
-                key={tile.key}
-                href="/app/protection#risks"
-                className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-left transition-colors hover:border-royal/40 hover:bg-royal/5"
-              >
-                <span className="text-sm font-medium text-midnight">
-                  {tile.label}
-                </span>
-                <span
-                  className="flex items-center gap-1.5 text-xs font-medium"
-                  style={{ color: TONE_COLOR[tile.tone] }}
-                >
-                  <span
-                    aria-hidden
-                    className="size-1.5 rounded-full"
-                    style={{ backgroundColor: TONE_COLOR[tile.tone] }}
-                  />
-                  {TILE_TONE_LABEL[tile.tone]}
-                </span>
-              </Link>
-            ))}
-          </div>
-
-          <p className="relative z-20 mt-auto text-sm font-medium">
-            <span className="inline-flex items-center gap-1 text-royal">
-              View business protection
-              <ArrowRight className="size-3.5" />
-            </span>
-          </p>
-        </Card>
-
-        {/* Pillar 2 — People & Benefits */}
-        <Card className="group relative flex flex-col gap-5 border-slate-200 p-6 shadow-sm transition-shadow hover:shadow-md">
-          <Link
-            href="/app/people"
-            className="absolute inset-0 z-10 rounded-xl"
-            aria-label="Go to People & Benefits"
-          />
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-midnight/5 text-midnight">
-                <HeartHandshake aria-hidden className="size-4" />
-              </span>
-              <h2 className="font-semibold text-midnight">
-                People &amp; Benefits
-              </h2>
-            </div>
-            <ArrowUpRight
-              aria-hidden
-              className="size-4 text-slate-400 transition-colors group-hover:text-royal"
-            />
-          </div>
-
-          <div className="flex items-center gap-5">
-            <ScoreDial value={benefits.peopleScore} label="out of 100" size={104} />
-            <p className="text-sm text-slate-600">
-              Across{" "}
-              <span className="font-semibold text-midnight">
-                {benefits.employees} employees
-              </span>
-              , with opportunities to broaden benefits based on the
-              information reviewed.
-            </p>
-          </div>
-
-          <div className="relative z-20 grid grid-cols-2 gap-2.5">
-            <div className="rounded-lg border border-slate-200 px-3 py-2.5">
-              <p className="text-xs text-slate-500">Employee Protection</p>
-              <p className="text-lg font-semibold text-midnight">
-                {benefits.peopleScore}
-                <span className="text-xs font-normal text-slate-400">/100</span>
-              </p>
-            </div>
-            <div className="rounded-lg border border-slate-200 px-3 py-2.5">
-              <p className="text-xs text-slate-500">Benefits</p>
-              <p className="text-lg font-semibold text-midnight">
-                {benefits.benefitsScore}
-                <span className="text-xs font-normal text-slate-400">/100</span>
-              </p>
-            </div>
-          </div>
-
-          <p className="relative z-20 mt-auto text-sm font-medium">
-            <span className="inline-flex items-center gap-1 text-royal">
-              View people &amp; benefits
-              <ArrowRight className="size-3.5" />
-            </span>
-          </p>
-        </Card>
-      </div>
-
-      {/* ------------------------------------------------------------ */}
-      {/* Your priorities — where both pillars converge                */}
-      {/* ------------------------------------------------------------ */}
-      <section className="mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+        {/* ---------------------------------------------------------- */}
+        {/* Two pillars, as authoritative score bands                   */}
+        {/* ---------------------------------------------------------- */}
+        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+          {/* Pillar 1 — Business Protection */}
           <div>
-            <h2 className="text-xl font-semibold text-midnight sm:text-2xl">
-              Your priorities
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm text-slate-600">
-              Business protection and people &amp; benefits together, prioritised
-              so you know what may be worth looking at first.
-            </p>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className="gap-2 border-royal text-royal hover:bg-royal/5 hover:text-royal"
-          >
-            <Link href="/app/recommendations">
-              Review priorities
-              <ArrowRight className="size-4" />
+            <ScoreBand
+              value={scores.overall}
+              label="Protection Score"
+              title="Business Protection"
+              caption={
+                attentionCount > 0
+                  ? `${attentionCount} ${
+                      attentionCount === 1 ? "priority" : "priorities"
+                    } may need attention based on the information reviewed.`
+                  : "Your business appears relatively well protected based on the information reviewed."
+              }
+            />
+
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+              {protectionTiles.map((tile) => (
+                <Link
+                  key={tile.key}
+                  href="/app/protection#risks"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-line bg-white px-3 py-2.5 text-left transition-colors hover:border-royal/40 hover:bg-royal/5"
+                >
+                  <span className="text-sm font-medium text-midnight">
+                    {tile.label}
+                  </span>
+                  <span
+                    className="flex items-center gap-1.5 text-xs font-medium"
+                    style={{ color: TONE_COLOR[tile.tone] }}
+                  >
+                    <span
+                      aria-hidden
+                      className="size-1.5 rounded-full"
+                      style={{ backgroundColor: TONE_COLOR[tile.tone] }}
+                    />
+                    {TILE_TONE_LABEL[tile.tone]}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            <Link
+              href="/app/protection"
+              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-royal transition-colors hover:text-electric"
+            >
+              View Business Protection
+              <ArrowRight className="size-3.5" />
             </Link>
-          </Button>
+          </div>
+
+          {/* Pillar 2 — People & Benefits */}
+          <div>
+            <ScoreBand
+              value={benefits.peopleScore}
+              label="People Score"
+              title="People & Benefits"
+              caption={`Benefits score ${benefits.benefitsScore} out of 100 across ${benefits.employees} employees, with opportunities to broaden support based on the information reviewed.`}
+            />
+
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+              <div className="rounded-lg border border-line bg-white px-3 py-2.5">
+                <p className="text-xs text-muted-ink">Employee Protection</p>
+                <p className="text-lg font-semibold text-midnight">
+                  {benefits.peopleScore}
+                  <span className="text-xs font-normal text-muted-ink">/100</span>
+                </p>
+              </div>
+              <div className="rounded-lg border border-line bg-white px-3 py-2.5">
+                <p className="text-xs text-muted-ink">Benefits</p>
+                <p className="text-lg font-semibold text-midnight">
+                  {benefits.benefitsScore}
+                  <span className="text-xs font-normal text-muted-ink">/100</span>
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/app/people"
+              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-royal transition-colors hover:text-electric"
+            >
+              View People &amp; Benefits
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3">
-          {recommendations.map((reco) => (
-            <Link
-              key={reco.id}
-              href={`/app/recommendations/${reco.id}`}
-              className="block"
+        {/* ---------------------------------------------------------- */}
+        {/* Your priorities — where both pillars converge                */}
+        {/* ---------------------------------------------------------- */}
+        <section className="mt-14">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="kicker">Priorities</p>
+              <h2 className="mt-1 text-xl font-semibold text-midnight sm:text-2xl">
+                Your priorities
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-ink">
+                Business protection and people &amp; benefits together, prioritised
+                so you know what may be worth looking at first.
+              </p>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="gap-2 border-royal text-royal hover:bg-royal/5 hover:text-royal"
             >
-              <Card className="flex items-center gap-4 border-slate-200 p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
+              <Link href="/app/recommendations">
+                Review priorities
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+            {recommendations.map((reco) => (
+              <Link
+                key={reco.id}
+                href={`/app/recommendations/${reco.id}`}
+                className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-app-bg/60 sm:px-6"
+              >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-midnight text-sm font-semibold text-white">
                   {reco.index}
                 </span>
@@ -233,19 +195,19 @@ export default function OverviewPage() {
                     </h3>
                     <PriorityBadge priority={reco.priority} className="shrink-0" />
                   </div>
-                  <p className="mt-0.5 truncate text-sm text-slate-600">
+                  <p className="mt-0.5 truncate text-sm text-muted-ink">
                     {reco.recommended}
                   </p>
                 </div>
                 <ArrowRight
                   aria-hidden
-                  className="size-4 shrink-0 text-slate-400"
+                  className="size-4 shrink-0 text-muted-ink"
                 />
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
     </motion.div>
   );
 }
