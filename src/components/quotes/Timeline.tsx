@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RequestStage } from "@/lib/types";
 
@@ -21,7 +21,12 @@ export interface TimelineProps {
  * steps in order, with everything up to and including the request's current
  * stage marked done/current and the rest shown as upcoming. Step order and
  * stage semantics come straight from RequestStage (src/lib/types.ts); only
- * the display labels are defined here.
+ * the display labels + PI/D&O visual treatment are defined here.
+ *
+ * Done = mint dot with a midnight check, royal label. Current = midnight
+ * dot with an electric halo, midnight label. Upcoming = outline dot, muted
+ * label. Connectors between done steps pick up royal; the rest stay on the
+ * hairline `line` colour.
  */
 export function Timeline({ stage, className }: TimelineProps) {
   const currentIndex = STEPS.findIndex((s) => s.key === stage);
@@ -37,25 +42,28 @@ export function Timeline({ stage, className }: TimelineProps) {
         return (
           <li key={step.key} className="flex shrink-0 items-start">
             <div className="flex w-[6.75rem] flex-col items-center gap-1.5 text-center sm:w-28">
-              {isUpcoming ? (
-                <Circle className="size-5 shrink-0 text-slate-300" aria-hidden />
-              ) : (
-                <CheckCircle2
-                  className={cn(
-                    "size-5 shrink-0",
-                    isCurrent ? "text-electric" : "text-royal"
-                  )}
-                  aria-hidden
-                />
-              )}
+              <span
+                aria-hidden
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded-full",
+                  isUpcoming && "border-[1.5px] border-line bg-white",
+                  isDone && "bg-mint",
+                  isCurrent && "bg-midnight ring-4 ring-electric/15"
+                )}
+              >
+                {isDone && <Check className="size-3 text-midnight" aria-hidden />}
+                {isCurrent && (
+                  <span className="size-1.5 rounded-full bg-electric" aria-hidden />
+                )}
+              </span>
               <span
                 className={cn(
                   "px-1 text-xs leading-tight",
                   isCurrent
                     ? "font-semibold text-midnight"
                     : isDone
-                    ? "text-slate-600"
-                    : "text-slate-400"
+                    ? "text-royal"
+                    : "text-muted-ink"
                 )}
               >
                 {step.label}
@@ -66,7 +74,7 @@ export function Timeline({ stage, className }: TimelineProps) {
                 aria-hidden
                 className={cn(
                   "mt-2.5 h-px w-6 shrink-0 sm:w-9",
-                  connectorDone ? "bg-royal" : "bg-slate-200"
+                  connectorDone ? "bg-royal" : "bg-line"
                 )}
               />
             )}

@@ -11,8 +11,7 @@ import {
   StickyNote,
   User,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Timeline } from "@/components/quotes/Timeline";
 import { AssessmentDisclaimer } from "@/components/common/AssessmentDisclaimer";
 import { useSession } from "@/lib/store";
@@ -52,71 +51,67 @@ function RequestCard({ request }: { request: QuoteRequest }) {
   const ContactIcon = contactMethodIcon(request.preferredContact);
 
   return (
-    <Card className="border-slate-200">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
-              <Building2 className="size-3.5 shrink-0" aria-hidden />
-              <span>{demoCompany.profile.name}</span>
-            </div>
-            <CardTitle className="mt-1 text-base text-midnight">
-              {request.solution}
-            </CardTitle>
-            {recommendation && (
-              <p className="mt-1 text-sm text-slate-500">
-                From: {recommendation.title}
-              </p>
-            )}
+    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+      <div className="flex flex-wrap items-start justify-between gap-3 px-6 pb-5 pt-6 sm:px-7">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[.1em] text-muted-ink">
+            <Building2 className="size-3.5 shrink-0" aria-hidden />
+            <span className="truncate">{demoCompany.profile.name}</span>
           </div>
-          <Badge
-            variant="outline"
-            className="gap-1 border-slate-200 text-slate-500"
-          >
-            <Calendar className="size-3.5" aria-hidden />
-            {formatSubmittedAt(request.submittedAt)}
-          </Badge>
+          <h3 className="mt-1.5 text-base font-semibold text-midnight">
+            {request.solution}
+          </h3>
+          {recommendation && (
+            <p className="mt-0.5 text-sm text-muted-ink">
+              From: {recommendation.title}
+            </p>
+          )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-0">
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-app-bg px-3 py-1 text-xs font-medium text-muted-ink">
+          <Calendar className="size-3.5" aria-hidden />
+          {formatSubmittedAt(request.submittedAt)}
+        </span>
+      </div>
+
+      <div className="space-y-6 border-t border-line px-6 py-6 sm:px-7">
         <Timeline stage={request.stage} />
 
         {/* Contact details — the commercially useful part: what the admin
             needs to act on this lead, without an email chain. */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+        <div className="rounded-xl border border-line bg-app-bg px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-royal">
             Contact details
           </p>
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <User className="size-4 shrink-0 text-slate-400" aria-hidden />
+          <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+            <div className="flex items-center gap-2 text-sm text-ink">
+              <User className="size-4 shrink-0 text-muted-ink" aria-hidden />
               <span className="truncate">{request.contactName}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <ContactIcon className="size-4 shrink-0 text-slate-400" aria-hidden />
+            <div className="flex items-center gap-2 text-sm text-ink">
+              <ContactIcon className="size-4 shrink-0 text-muted-ink" aria-hidden />
               <span>Prefers {request.preferredContact}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <Phone className="size-4 shrink-0 text-slate-400" aria-hidden />
+            <div className="flex items-center gap-2 text-sm text-ink">
+              <Phone className="size-4 shrink-0 text-muted-ink" aria-hidden />
               <span>{request.phone}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <Mail className="size-4 shrink-0 text-slate-400" aria-hidden />
+            <div className="flex items-center gap-2 text-sm text-ink">
+              <Mail className="size-4 shrink-0 text-muted-ink" aria-hidden />
               <span className="truncate">{request.email}</span>
             </div>
           </div>
           {request.note && (
-            <div className="mt-3 flex items-start gap-2 border-t border-slate-200 pt-3 text-sm text-slate-600">
+            <div className="mt-3 flex items-start gap-2 border-t border-line pt-3 text-sm text-muted-ink">
               <StickyNote
-                className="mt-0.5 size-4 shrink-0 text-slate-400"
+                className="mt-0.5 size-4 shrink-0 text-muted-ink"
                 aria-hidden
               />
               <span>{request.note}</span>
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -134,25 +129,24 @@ export default function QuotesPage() {
   const submittedRequests = useSession((s) => s.submittedRequests);
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-midnight sm:text-3xl">
-        Quotes &amp; Requests
-      </h1>
-      <p className="mt-2 max-w-2xl text-sm text-slate-600">
+    <div className="cs-container px-0">
+      <p className="kicker">Quotes &amp; Requests</p>
+      <h1 className="h-section mt-1 text-midnight">Quotes &amp; Requests</h1>
+      <p className="mt-2 max-w-2xl text-sm text-muted-ink">
         Track what you&apos;ve asked CoverSure to help with, from request
         through to activation.
       </p>
 
       {submittedRequests.length === 0 ? (
-        <Card className="mt-8 border-slate-200">
+        <Card className="mt-8 rounded-2xl border-line shadow-soft">
           <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-app-bg text-muted-ink">
               <ClipboardList className="size-6" aria-hidden />
             </span>
             <h2 className="text-lg font-semibold text-midnight">
               No requests yet
             </h2>
-            <p className="max-w-sm text-sm text-slate-500">
+            <p className="max-w-sm text-sm text-muted-ink">
               Explore your priorities to find where CoverSure can help.
             </p>
             <Link
