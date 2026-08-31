@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +23,10 @@ export interface RecommendationDetailPageProps {
  * of the highest-priority journey (Assessment -> Recommendation -> Fix with
  * CoverSure). Every section renders directly off the matched recommendation
  * object in demoCompany.recommendations; nothing here is hardcoded copy.
+ *
+ * Presented inside one PI/D&O `.panel` so the narrative reads as a single
+ * professional brief (what matters -> why -> what CoverSure recommends ->
+ * what you can do) rather than a stack of separate cards.
  */
 export default function RecommendationDetailPage({
   params,
@@ -35,90 +38,96 @@ export default function RecommendationDetailPage({
   }
 
   return (
-    <div className="max-w-3xl">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-midnight text-sm font-semibold text-white">
-            {reco.index}
-          </span>
-          <h1 className="pt-1 text-2xl font-semibold leading-snug text-midnight sm:text-3xl">
-            {reco.title}
-          </h1>
+    <div className="cs-narrow px-0">
+      {/* Panel */}
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+        {/* Panel head */}
+        <div className="px-6 pb-6 pt-7 sm:px-9 sm:pt-8">
+          <p className="kicker">Recommendation</p>
+          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-4">
+              <span
+                aria-hidden
+                className="select-none pt-1 text-[30px] font-bold leading-none text-electric/25 sm:text-[34px]"
+              >
+                {reco.index}
+              </span>
+              <h1 className="h-panel pt-1 text-midnight">{reco.title}</h1>
+            </div>
+            <PriorityBadge priority={reco.priority} className="mt-1.5" />
+          </div>
         </div>
-        <PriorityBadge priority={reco.priority} className="mt-1.5" />
-      </div>
 
-      {/* Why this matters */}
-      <section className="mt-8 space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Why this matters
-        </h2>
-        <p className="text-base text-slate-700">{reco.why}</p>
-      </section>
+        <div className="divide-y divide-line border-t border-line">
+          {/* Why this matters */}
+          <section className="px-6 py-6 sm:px-9">
+            <h2 className="kicker">Why this matters</h2>
+            <p className="mt-2.5 text-base leading-relaxed text-ink/90">
+              {reco.why}
+            </p>
+          </section>
 
-      {/* What we found */}
-      <section className="mt-8 space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          What we found
-        </h2>
-        <Card className="border-slate-200">
-          <CardContent className="space-y-2.5 py-5">
-            {reco.found.map((item) => (
-              <div key={item.label} className="flex items-start gap-2.5 text-sm">
-                {item.present ? (
-                  <CheckCircle2
-                    aria-hidden
-                    className="mt-0.5 size-4 shrink-0 text-royal"
-                  />
-                ) : (
-                  <XCircle
-                    aria-hidden
-                    className="mt-0.5 size-4 shrink-0 text-slate-400"
-                  />
-                )}
-                <span
-                  className={item.present ? "text-slate-700" : "text-slate-500"}
+          {/* What we found */}
+          <section className="px-6 py-6 sm:px-9">
+            <h2 className="kicker">What we found</h2>
+            <div className="mt-3 space-y-2.5">
+              {reco.found.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-start gap-2.5 text-sm"
                 >
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
+                  {item.present ? (
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-mint">
+                      <Check aria-hidden className="size-3 text-midnight" />
+                    </span>
+                  ) : (
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#fdecea]">
+                      <X aria-hidden className="size-3 text-danger" />
+                    </span>
+                  )}
+                  <span
+                    className={
+                      item.present ? "text-ink" : "text-muted-ink"
+                    }
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
 
-      {/* What could be considered */}
-      <section className="mt-8 space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          What could be considered
-        </h2>
-        <p className="text-base text-slate-700">{reco.couldBeConsidered}</p>
-      </section>
+          {/* What could be considered */}
+          <section className="px-6 py-6 sm:px-9">
+            <h2 className="kicker">What could be considered</h2>
+            <p className="mt-2.5 text-base leading-relaxed text-ink/90">
+              {reco.couldBeConsidered}
+            </p>
+          </section>
 
-      {/* CoverSure can help */}
-      <section className="mt-8 space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          CoverSure can help
-        </h2>
-        <Card className="border-electric/20 bg-electric/5">
-          <CardContent className="py-5">
-            <p className="text-base text-slate-700">{reco.coversureCanHelp}</p>
-          </CardContent>
-        </Card>
-      </section>
+          {/* CoverSure can help */}
+          <section className="px-6 py-6 sm:px-9">
+            <h2 className="kicker">CoverSure can help</h2>
+            <div className="mt-3 rounded-xl border border-[rgba(162,250,163,.45)] bg-[rgba(162,250,163,.14)] px-5 py-4">
+              <p className="text-base leading-relaxed text-ink/90">
+                {reco.coversureCanHelp}
+              </p>
+            </div>
+          </section>
 
-      {/* Determination trail */}
-      <div className="mt-6">
-        <DeterminationTrail
-          determination={reco.determination}
-          recommendationTitle={reco.title}
-        />
+          {/* Determination trail — quiet transparency affordance, tinted footer */}
+          <div className="bg-app-bg/60 px-6 py-5 sm:px-9">
+            <DeterminationTrail
+              determination={reco.determination}
+              recommendationTitle={reco.title}
+            />
+          </div>
+        </div>
       </div>
 
       {/* CTAs */}
-      <div className="mt-10 flex flex-wrap items-center gap-3">
-        <Button asChild size="lg" className="bg-electric hover:bg-electric/90">
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <Button asChild size="lg">
           <Link href={`/app/fix/${reco.id}`}>
             Fix this with CoverSure
             <ArrowRight className="size-4" />
@@ -127,11 +136,7 @@ export default function RecommendationDetailPage({
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-royal text-royal hover:bg-royal/5 hover:text-royal"
-            >
+            <Button variant="outline" size="lg">
               Talk to a CoverSure specialist
             </Button>
           </DialogTrigger>
@@ -139,7 +144,7 @@ export default function RecommendationDetailPage({
             <DialogHeader>
               <DialogTitle>We&apos;ll be in touch</DialogTitle>
             </DialogHeader>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted-ink">
               A CoverSure specialist will reach out to talk through the &ldquo;
               {reco.title}&rdquo; recommendation and what could work for your
               business, subject to underwriting and policy terms.
