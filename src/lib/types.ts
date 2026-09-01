@@ -62,6 +62,34 @@ export interface QuoteRequest {
   note?: string;
 }
 
+export type AssetCategory = "immovable" | "movable";
+
+export interface Policy {
+  key: string;
+  type: string;            // e.g. "Property All-Risk"
+  insurer: string;
+  policyNumber: string;
+  sumInsured: string;      // FACT, e.g. "₹20 Cr" / "₹2 L / employee"
+  premium: string;         // FACT, e.g. "₹6.4 L"
+  startDate: string;       // ISO "YYYY-MM-DD"
+  renewalDate: string;     // ISO "YYYY-MM-DD"
+  status: CoverageStatus;  // covered | review (identified policies only)
+  relatedAssetKeys: string[];
+  documents: string[];
+}
+
+export interface Asset {
+  key: string;
+  name: string;
+  type: string;            // Factory / Warehouse / Office / Machinery / Inventory / Vehicles / Equipment ...
+  category: AssetCategory;
+  location: string;
+  value: string;           // FACT, e.g. "₹14 Cr"
+  insuranceStatus: CoverageStatus;
+  relatedPolicyKeys: string[]; // [] when coverage not identified
+  acquisitionDate?: string;    // ISO, optional
+}
+
 export interface DemoCompany {
   profile: BusinessProfile;
   coverage: CoverageLine[];
@@ -70,4 +98,7 @@ export interface DemoCompany {
   benefits: Benefits;
   recommendations: Recommendation[];
   seededRequests: QuoteRequest[];
+  asOfDate: string;
+  policies: Policy[];
+  assets: Asset[];
 }

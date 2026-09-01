@@ -41,3 +41,37 @@ test("headline numbers are present and consistent", () => {
   assert.equal(demoCompany.benefits.peopleScore, 67);
   assert.equal(demoCompany.benefits.benefitsScore, 43);
 });
+
+const ASSET_CATEGORIES = new Set(["immovable", "movable"]);
+
+test("asOfDate parses to a valid date", () => {
+  assert.ok(!Number.isNaN(new Date(demoCompany.asOfDate).getTime()), "asOfDate does not parse");
+});
+
+test("policies have valid statuses, resolvable related assets, and parseable dates", () => {
+  const assetKeys = new Set(demoCompany.assets.map((a) => a.key));
+  for (const p of demoCompany.policies) {
+    assert.ok(STATUSES.has(p.status), `${p.key} bad status`);
+    for (const ak of p.relatedAssetKeys) {
+      assert.ok(assetKeys.has(ak), `${p.key} relatedAssetKeys references unknown asset ${ak}`);
+    }
+    assert.ok(!Number.isNaN(new Date(p.startDate).getTime()), `${p.key} startDate does not parse`);
+    assert.ok(!Number.isNaN(new Date(p.renewalDate).getTime()), `${p.key} renewalDate does not parse`);
+  }
+});
+
+test("assets have valid categories, valid insurance statuses, and resolvable related policies", () => {
+  const policyKeys = new Set(demoCompany.policies.map((p) => p.key));
+  for (const a of demoCompany.assets) {
+    assert.ok(ASSET_CATEGORIES.has(a.category), `${a.key} bad category`);
+    assert.ok(STATUSES.has(a.insuranceStatus), `${a.key} bad insuranceStatus`);
+    for (const pk of a.relatedPolicyKeys) {
+      assert.ok(policyKeys.has(pk), `${a.key} relatedPolicyKeys references unknown policy ${pk}`);
+    }
+  }
+});
+
+test("portfolio counts are sane", () => {
+  assert.equal(demoCompany.policies.length, 4);
+  assert.equal(demoCompany.assets.length, 7);
+});
