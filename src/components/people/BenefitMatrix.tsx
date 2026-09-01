@@ -6,7 +6,7 @@ import type { BenefitItem } from "@/lib/types";
 
 export interface BenefitMatrixProps {
   items: BenefitItem[];
-  /** Where "Explore with CoverSure" leads — the employee recommendation convergence. */
+  /** Where "Secure with CoverSure" leads — the employee recommendation convergence. */
   recommendationHref?: string;
 }
 
@@ -189,7 +189,7 @@ export function BenefitMatrix({
                         className="mt-4 gap-2 self-start border-royal text-royal hover:bg-royal/5 hover:text-royal"
                       >
                         <Link href={recommendationHref}>
-                          Explore with CoverSure
+                          Secure with CoverSure
                           <ArrowRight className="size-4" />
                         </Link>
                       </Button>

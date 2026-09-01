@@ -129,7 +129,7 @@ export default function RecommendationDetailPage({
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <Button asChild size="lg">
           <Link href={`/app/fix/${reco.id}`}>
-            Fix this with CoverSure
+            Secure with CoverSure
             <ArrowRight className="size-4" />
           </Link>
         </Button>

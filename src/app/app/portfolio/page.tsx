@@ -263,8 +263,18 @@ export default function PortfolioPage() {
         {/* Portfolio status — calm status segments, not a score              */}
         {/* -------------------------------------------------------------- */}
         <section id="status" className="mt-14 scroll-mt-24">
-          <p className="kicker">Portfolio status</p>
-          <h2 className="h-section mt-1 text-midnight">Where things stand</h2>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="kicker">Portfolio status</p>
+              <h2 className="h-section mt-1 text-midnight">Where things stand</h2>
+            </div>
+            <Link
+              href="/app/protection"
+              className="text-sm font-medium text-royal hover:text-electric hover:underline"
+            >
+              View risk assessment
+            </Link>
+          </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
             {statusSegments.map((segment) => (

@@ -56,7 +56,7 @@ export function RecommendationCard({ reco }: RecommendationCardProps) {
 
       <Button asChild className="mt-5">
         <Link href={`/app/recommendations/${reco.id}`}>
-          Explore Solution
+          View details
           <ArrowRight className="size-4" />
         </Link>
       </Button>
