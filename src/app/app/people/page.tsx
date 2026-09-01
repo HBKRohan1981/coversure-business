@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 import { ScoreBand } from "@/components/score/ScoreBand";
 import { BenefitMatrix } from "@/components/people/BenefitMatrix";
 import { AssessmentDisclaimer } from "@/components/common/AssessmentDisclaimer";
@@ -28,7 +30,14 @@ export default function PeoplePage() {
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
       <div className="cs-container px-0">
-        <p className="kicker">People &amp; Benefits</p>
+        <Link
+          href="/app/portfolio"
+          className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-ink transition-colors hover:text-royal"
+        >
+          <ArrowLeft className="size-3.5" />
+          Part of your protection portfolio
+        </Link>
+        <p className="kicker mt-3">People &amp; Benefits</p>
         <h1 className="h-section mt-1 text-midnight">Look after your people</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-ink">
           Meaningful employee benefits don&apos;t have to be complicated.

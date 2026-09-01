@@ -69,7 +69,11 @@ export default function ProtectionPage() {
               on screen. */}
           <h1 className="sr-only">Your Business Protection Score</h1>
 
-          <p className="kicker">Business protection · {profile.name}</p>
+          <p className="kicker">Risk Assessment · {profile.name}</p>
+          <p className="mt-2 max-w-2xl text-sm text-muted-ink">
+            Based on the information in your portfolio and business profile,
+            here&apos;s how your protection currently looks.
+          </p>
 
           <div className="mt-4">
             <ScoreBand

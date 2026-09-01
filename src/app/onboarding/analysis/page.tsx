@@ -107,8 +107,8 @@ export default function AnalysisPage() {
 
       <div className="mt-8 flex justify-end">
         <Button asChild size="lg" className="gap-2">
-          <Link href="/app/protection">
-            Continue to your assessment
+          <Link href="/app/portfolio">
+            View your Protection Portfolio
             <ArrowRight className="size-4" />
           </Link>
         </Button>
