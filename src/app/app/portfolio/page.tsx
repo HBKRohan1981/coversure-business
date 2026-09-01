@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Share2, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -36,7 +36,7 @@ import { demoCompany } from "@/lib/demo-data";
 import { useSession } from "@/lib/store";
 import { formatEmployees } from "@/lib/format";
 import { daysUntil, deriveInsights, portfolioCounts, renewalBuckets, type Insight } from "@/lib/portfolio";
-import type { Asset, AssetCategory, Policy, Severity } from "@/lib/types";
+import type { Asset, AssetCategory, Policy, Recommendation, Severity } from "@/lib/types";
 
 /**
  * Severity -> Meter level, same mapping used on /app/insights and RiskCard
@@ -145,6 +145,7 @@ const fieldLabel = "text-[13.5px] font-medium text-midnight";
  */
 export default function PortfolioPage() {
   const addedAssets = useSession((s) => s.addedAssets);
+  const submittedRequests = useSession((s) => s.submittedRequests);
   const { profile, policies, benefits, asOfDate } = demoCompany;
 
   // Canonical asset list: seeded demo assets + anything added this session.
@@ -153,6 +154,19 @@ export default function PortfolioPage() {
   const counts = portfolioCounts(assets);
   const buckets = renewalBuckets(policies, asOfDate);
   const upcomingRenewals = buckets.d30.length + buckets.d60.length + buckets.d90.length;
+
+  // Nearest upcoming renewal (within the 30/60/90-day windows above) for the
+  // Share Portfolio summary — the same fixed-date daysUntil used everywhere
+  // else on this page, never wall-clock time.
+  const nearestRenewal = [...buckets.d30, ...buckets.d60, ...buckets.d90].reduce<
+    { type: string; insurer: string; days: number; renewalDate: string } | null
+  >((closest, policy) => {
+    const days = daysUntil(policy.renewalDate, asOfDate);
+    if (!closest || days < closest.days) {
+      return { type: policy.type, insurer: policy.insurer, days, renewalDate: policy.renewalDate };
+    }
+    return closest;
+  }, null);
 
   // "Not identified" and "unavailable" (session-added assets marked "not
   // sure") both mean no coverage could be identified — folded into one
@@ -201,13 +215,34 @@ export default function PortfolioPage() {
         {/* Header — restrained control-centre framing, not a dark ScoreBand */}
         {/* -------------------------------------------------------------- */}
         <section id="header" className="scroll-mt-24">
-          <p className="kicker">Protection Portfolio</p>
-          <h1 className="h-section mt-1 text-midnight">Your Protection Portfolio</h1>
-          <p className="mt-2 text-base font-medium text-midnight">{profile.name}</p>
-          <p className="mt-2 max-w-2xl text-sm text-muted-ink">
-            Everything protecting {displayName(profile.name)} — policies, assets, people and
-            renewals — in one place.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="kicker">Protection Portfolio</p>
+              <h1 className="h-section mt-1 text-midnight">Your Protection Portfolio</h1>
+              <p className="mt-2 text-base font-medium text-midnight">{profile.name}</p>
+              <p className="mt-2 max-w-2xl text-sm text-muted-ink">
+                Everything protecting {displayName(profile.name)} — policies, assets, people and
+                renewals — in one place.
+              </p>
+            </div>
+            <SharePortfolioDialog
+              companyName={profile.name}
+              industry={profile.industry}
+              location={profile.location}
+              employees={profile.employees}
+              asOfDate={asOfDate}
+              policiesCount={policies.length}
+              assetsCount={assets.length}
+              peopleScore={benefits.peopleScore}
+              benefitsScore={benefits.benefitsScore}
+              statusSegments={statusSegments}
+              upcomingRenewals={upcomingRenewals}
+              nearestRenewal={nearestRenewal}
+              topInsights={topInsights}
+              recommendations={demoCompany.recommendations}
+              submittedRequestsCount={submittedRequests.length}
+            />
+          </div>
         </section>
 
         {/* -------------------------------------------------------------- */}
@@ -803,6 +838,394 @@ function AddAssetDialog({ policies }: { policies: Policy[] }) {
             <Button type="submit">Add asset</Button>
           </div>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Simulated business-collaboration recipients for "Share portfolio" — an
+ * internal audience selector, not a real distribution list. Multi-select,
+ * chip-style, matching the "insured" toggle pattern above.
+ */
+const RECIPIENT_OPTIONS = ["Finance", "Procurement", "Admin", "HR", "Management", "Other"] as const;
+
+interface ShareSummaryData {
+  companyName: string;
+  industry: string;
+  location: string;
+  employees: number;
+  asOfDate: string;
+  policiesCount: number;
+  assetsCount: number;
+  peopleScore: number;
+  benefitsScore: number;
+  statusSegments: { label: string; count: number }[];
+  upcomingRenewals: number;
+  nearestRenewal: { type: string; insurer: string; days: number; renewalDate: string } | null;
+  topInsights: { title: string; detail: string }[];
+  recommendations: { title: string }[];
+  submittedRequestsCount: number;
+  recipients: string[];
+}
+
+/**
+ * Builds the plain-text "Copy summary" body from the same derived data shown
+ * in the SharePortfolioDialog preview — nothing here is hardcoded, and the
+ * copied text always matches what's on screen. Careful, non-absolute
+ * insurance language throughout (no "underinsured" / adequacy claims).
+ */
+function buildShareSummaryText(data: ShareSummaryData): string {
+  const lines: string[] = [];
+
+  lines.push("BUSINESS PROTECTION PORTFOLIO SUMMARY");
+  lines.push(data.companyName);
+  lines.push(`${data.industry} · ${data.location} · ${formatEmployees(data.employees)} employees`);
+  lines.push(`As of ${formatRenewalDate(data.asOfDate)}`);
+  lines.push("");
+
+  lines.push("PORTFOLIO OVERVIEW");
+  lines.push(`Policies: ${data.policiesCount}`);
+  lines.push(`Assets: ${data.assetsCount}`);
+  lines.push(
+    `Employee protection — People score ${data.peopleScore}/100, Benefits score ${data.benefitsScore}/100`
+  );
+  lines.push("");
+
+  lines.push("COVERAGE STATUS");
+  for (const segment of data.statusSegments) {
+    lines.push(`${segment.label}: ${segment.count}`);
+  }
+  lines.push("");
+
+  lines.push("UPCOMING RENEWALS");
+  lines.push(
+    `${data.upcomingRenewals} renewal${data.upcomingRenewals === 1 ? "" : "s"} identified in the next 90 days`
+  );
+  if (data.nearestRenewal) {
+    lines.push(
+      `Nearest: ${data.nearestRenewal.type} (${data.nearestRenewal.insurer}) — in ${data.nearestRenewal.days} day${
+        data.nearestRenewal.days === 1 ? "" : "s"
+      }, renews ${formatRenewalDate(data.nearestRenewal.renewalDate)}`
+    );
+  }
+  lines.push("");
+
+  if (data.topInsights.length > 0) {
+    lines.push("KEY INSIGHTS");
+    for (const insight of data.topInsights) {
+      lines.push(`- ${insight.title}: ${insight.detail}`);
+    }
+    lines.push("");
+  }
+
+  lines.push("OPEN RECOMMENDATIONS / ACTIONS");
+  lines.push(
+    `${data.submittedRequestsCount} request${data.submittedRequestsCount === 1 ? "" : "s"} submitted this session`
+  );
+  for (const rec of data.recommendations.slice(0, 3)) {
+    lines.push(`- ${rec.title}`);
+  }
+  lines.push("");
+
+  if (data.recipients.length > 0) {
+    lines.push(`Shared with: ${data.recipients.join(", ")}`);
+    lines.push("");
+  }
+
+  lines.push(
+    "This summary is indicative and reflects the information currently available in the CoverSure Business portfolio. Coverage is subject to policy terms and insurer underwriting."
+  );
+  lines.push("");
+  lines.push("Prepared via CoverSure Business.");
+
+  return lines.join("\n");
+}
+
+/**
+ * "Share portfolio" (Screen — Task I6). An internal business-collaboration
+ * action, not a PDF export or a sales prompt: it lets someone hand a
+ * colleague (Finance / Procurement / Admin / HR / Management) a clean,
+ * point-in-time read of the protection portfolio. Everything shown — and
+ * everything the "Copy summary" action writes to the clipboard — is derived
+ * from the same demoCompany + portfolio selectors the rest of this page
+ * uses; nothing is invented for the summary. Recipients and "Generate
+ * shareable summary" are simulated: no email is sent, no permission is
+ * actually granted.
+ */
+function SharePortfolioDialog({
+  companyName,
+  industry,
+  location,
+  employees,
+  asOfDate,
+  policiesCount,
+  assetsCount,
+  peopleScore,
+  benefitsScore,
+  statusSegments,
+  upcomingRenewals,
+  nearestRenewal,
+  topInsights,
+  recommendations,
+  submittedRequestsCount,
+}: {
+  companyName: string;
+  industry: string;
+  location: string;
+  employees: number;
+  asOfDate: string;
+  policiesCount: number;
+  assetsCount: number;
+  peopleScore: number;
+  benefitsScore: number;
+  statusSegments: { key: string; label: string; count: number; tone: StatusTone }[];
+  upcomingRenewals: number;
+  nearestRenewal: { type: string; insurer: string; days: number; renewalDate: string } | null;
+  topInsights: Insight[];
+  recommendations: Recommendation[];
+  submittedRequestsCount: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [preparedMessage, setPreparedMessage] = useState<string | null>(null);
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      setSelectedRecipients([]);
+      setCopyState("idle");
+      setPreparedMessage(null);
+    }
+  }
+
+  function toggleRecipient(option: string) {
+    setSelectedRecipients((prev) =>
+      prev.includes(option) ? prev.filter((r) => r !== option) : [...prev, option]
+    );
+    setPreparedMessage(null);
+  }
+
+  function summaryData(): ShareSummaryData {
+    return {
+      companyName,
+      industry,
+      location,
+      employees,
+      asOfDate,
+      policiesCount,
+      assetsCount,
+      peopleScore,
+      benefitsScore,
+      statusSegments: statusSegments.map((s) => ({ label: s.label, count: s.count })),
+      upcomingRenewals,
+      nearestRenewal,
+      topInsights: topInsights.map((i) => ({ title: i.title, detail: i.detail })),
+      recommendations: recommendations.map((r) => ({ title: r.title })),
+      submittedRequestsCount,
+      recipients: selectedRecipients,
+    };
+  }
+
+  /**
+   * navigator.clipboard can throw synchronously (insecure context /
+   * disabled permission) or reject asynchronously — both are guarded so a
+   * failed copy never crashes the dialog, it just falls back to an inline
+   * "Couldn't copy" state.
+   */
+  function handleCopy() {
+    const text = buildShareSummaryText(summaryData());
+    try {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          setCopyState("copied");
+          setTimeout(() => setCopyState("idle"), 2000);
+        })
+        .catch(() => {
+          setCopyState("error");
+          setTimeout(() => setCopyState("idle"), 2000);
+        });
+    } catch {
+      setCopyState("error");
+      setTimeout(() => setCopyState("idle"), 2000);
+    }
+  }
+
+  /** Simulated — no real send/permission grant, just an inline confirmation. */
+  function handleGenerate() {
+    const label = selectedRecipients.length > 0 ? selectedRecipients.join(", ") : "your team";
+    setPreparedMessage(`Summary prepared for ${label}.`);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Share2 className="size-4" />
+          Share portfolio
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Business Protection Portfolio Summary</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Business overview */}
+          <div className="rounded-xl border border-line bg-app-bg px-5 py-4">
+            <p className="font-semibold text-midnight">{companyName}</p>
+            <p className="mt-1 text-sm text-muted-ink">
+              {industry} · {location} · {formatEmployees(employees)} employees
+            </p>
+            <p className="mt-1 text-xs text-muted-ink">As of {formatRenewalDate(asOfDate)}</p>
+          </div>
+
+          {/* Stat row */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: "Policies", value: String(policiesCount) },
+              { label: "Assets", value: String(assetsCount) },
+              { label: "People score", value: `${peopleScore}/100` },
+              { label: "Benefits score", value: `${benefitsScore}/100` },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-line bg-white px-4 py-3 shadow-soft"
+              >
+                <p className="text-lg font-semibold text-midnight">{stat.value}</p>
+                <p className="kicker mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Coverage status */}
+          <div>
+            <p className="kicker">Coverage status</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {statusSegments.map((segment) => (
+                <div
+                  key={segment.key}
+                  className={cn(
+                    "flex items-center gap-2 rounded-full border px-3 py-1.5",
+                    STATUS_TONE_STYLE[segment.tone]
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className={cn("size-1.5 shrink-0 rounded-full", STATUS_DOT_STYLE[segment.tone])}
+                  />
+                  <span className="text-xs font-medium">{segment.label}</span>
+                  <span className="text-xs font-semibold">{segment.count}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-ink">
+              Indicative status based on the information in your portfolio.
+            </p>
+          </div>
+
+          {/* Upcoming renewals */}
+          <div>
+            <p className="kicker">Upcoming renewals</p>
+            <p className="mt-2 text-sm text-midnight">
+              {upcomingRenewals} renewal{upcomingRenewals === 1 ? "" : "s"} identified in the next 90
+              days
+            </p>
+            {nearestRenewal && (
+              <p className="mt-1 text-sm text-muted-ink">
+                Nearest: <span className="font-medium text-ink/80">{nearestRenewal.type}</span> (
+                {nearestRenewal.insurer}) — in {nearestRenewal.days} day
+                {nearestRenewal.days === 1 ? "" : "s"}, renews{" "}
+                {formatRenewalDate(nearestRenewal.renewalDate)}
+              </p>
+            )}
+          </div>
+
+          {/* Key insights */}
+          {topInsights.length > 0 && (
+            <div>
+              <p className="kicker">Key insights</p>
+              <div className="mt-2 space-y-2.5">
+                {topInsights.map((insight) => (
+                  <div key={insight.id} className="flex items-start gap-2.5">
+                    <Meter level={SEVERITY_LEVEL[insight.severity]} className="mt-1" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-midnight">{insight.title}</p>
+                      <p className="text-xs text-muted-ink">{insight.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Open recommendations / actions */}
+          <div>
+            <p className="kicker">Open recommendations / actions</p>
+            <p className="mt-2 text-sm text-midnight">
+              {submittedRequestsCount} request{submittedRequestsCount === 1 ? "" : "s"} submitted this
+              session
+            </p>
+            {recommendations.length > 0 && (
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-muted-ink">
+                {recommendations.slice(0, 3).map((rec) => (
+                  <li key={rec.id}>{rec.title}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Recipients — simulated, multi-select */}
+          <div className="border-t border-line pt-5">
+            <Label className={fieldLabel}>Share with</Label>
+            <p className="mt-1 text-xs text-muted-ink">
+              Select who this summary is for (simulated — no email is sent).
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {RECIPIENT_OPTIONS.map((option) => {
+                const selected = selectedRecipients.includes(option);
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => toggleRecipient(option)}
+                    className={cn(
+                      "rounded-full border-[1.5px] px-3.5 py-1.5 text-sm font-medium transition-colors",
+                      selected
+                        ? "border-electric bg-electric text-white"
+                        : "border-line bg-white text-ink hover:bg-app-bg"
+                    )}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+            <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleCopy}>
+              {copyState === "copied" ? <Check className="size-4" /> : <Copy className="size-4" />}
+              {copyState === "copied"
+                ? "Copied"
+                : copyState === "error"
+                ? "Couldn't copy"
+                : "Copy summary"}
+            </Button>
+            <Button type="button" size="sm" onClick={handleGenerate}>
+              Generate shareable summary
+            </Button>
+          </div>
+
+          {preparedMessage && (
+            <p className="rounded-lg border border-mint/50 bg-mint/20 px-3 py-2 text-sm font-medium text-midnight">
+              {preparedMessage}
+            </p>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
