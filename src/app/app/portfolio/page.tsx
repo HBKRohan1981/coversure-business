@@ -34,7 +34,7 @@ import { StatusPill } from "@/components/coverage/StatusPill";
 import { demoCompany } from "@/lib/demo-data";
 import { useSession } from "@/lib/store";
 import { formatEmployees } from "@/lib/format";
-import { portfolioCounts, renewalBuckets } from "@/lib/portfolio";
+import { daysUntil, portfolioCounts, renewalBuckets } from "@/lib/portfolio";
 import type { Asset, AssetCategory, Policy } from "@/lib/types";
 
 /**
@@ -341,9 +341,28 @@ export default function PortfolioPage() {
           </div>
         </section>
 
+        {/* -------------------------------------------------------------- */}
+        {/* Renewals — 30/60/90-day windows, nearest emphasised subtly.       */}
+        {/* Only d30/d60/d90 are grouped; "later" policies get a one-line    */}
+        {/* note rather than a group, so the section stays about what's      */}
+        {/* actually coming up.                                              */}
+        {/* -------------------------------------------------------------- */}
         <section id="renewals" className="mt-14 scroll-mt-24">
           <p className="kicker">Renewals</p>
-          <h2 className="h-section mt-1 text-midnight">Renewals</h2>
+          <h2 className="h-section mt-1 text-midnight">Upcoming renewals</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-ink">
+            Stay ahead of your policy renewals.
+          </p>
+
+          <div className="mt-6 space-y-8">
+            <RenewalGroup label="Next 30 days" policies={buckets.d30} asOfDate={asOfDate} />
+            <RenewalGroup label="Next 60 days" policies={buckets.d60} asOfDate={asOfDate} />
+            <RenewalGroup label="Next 90 days" policies={buckets.d90} asOfDate={asOfDate} />
+          </div>
+
+          {buckets.later.length > 0 && (
+            <p className="mt-4 text-xs text-muted-ink">Other policies renew later.</p>
+          )}
         </section>
       </div>
     </motion.div>
@@ -415,6 +434,73 @@ function AssetGroup({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * One 30/60/90-day renewal window (Renewals section). A restrained divided
+ * list, matching AssetGroup's pattern. Days-until is recomputed per row from
+ * the fixed, stored renewalDate + demoCompany.asOfDate (daysUntil in
+ * portfolio.ts) — never derived from the current wall-clock time. Renewals
+ * due within 30 days get a subtle amber accent; this only ever applies
+ * within the "Next 30 days" group since daysUntil > 30 by construction in
+ * the other two buckets.
+ */
+function RenewalGroup({
+  label,
+  policies,
+  asOfDate,
+}: {
+  label: string;
+  policies: Policy[];
+  asOfDate: string;
+}) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-ink">
+        {label}
+      </p>
+
+      {policies.length === 0 ? (
+        <p className="mt-3 rounded-xl border border-line bg-white px-5 py-4 text-sm text-muted-ink shadow-soft">
+          None in this window.
+        </p>
+      ) : (
+        <div className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line bg-white shadow-soft">
+          {policies.map((policy) => {
+            const days = daysUntil(policy.renewalDate, asOfDate);
+            const dueSoon = days <= 30;
+
+            return (
+              <div
+                key={policy.key}
+                className={cn(
+                  "flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between",
+                  dueSoon && "bg-amber/5"
+                )}
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold text-midnight">{policy.type}</p>
+                  <p className="mt-0.5 text-sm text-muted-ink">{policy.insurer}</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                  <span className="text-sm text-muted-ink">
+                    {formatRenewalDate(policy.renewalDate)}
+                  </span>
+                  <span className={cn("text-sm font-medium", dueSoon ? "text-amber" : "text-ink/80")}>
+                    in {days} day{days === 1 ? "" : "s"}
+                  </span>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/app/portfolio#policies">Review renewal</Link>
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
