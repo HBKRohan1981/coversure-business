@@ -351,13 +351,28 @@ export default function PortfolioPage() {
           <p className="kicker">Renewals</p>
           <h2 className="h-section mt-1 text-midnight">Upcoming renewals</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-ink">
-            Stay ahead of your policy renewals.
+            Stay ahead of your policy renewals — review coverage before each one.
           </p>
 
           <div className="mt-6 space-y-8">
-            <RenewalGroup label="Next 30 days" policies={buckets.d30} asOfDate={asOfDate} />
-            <RenewalGroup label="Next 60 days" policies={buckets.d60} asOfDate={asOfDate} />
-            <RenewalGroup label="Next 90 days" policies={buckets.d90} asOfDate={asOfDate} />
+            <RenewalGroup
+              label="Next 30 days"
+              policies={buckets.d30}
+              asOfDate={asOfDate}
+              assetNameByKey={assetNameByKey}
+            />
+            <RenewalGroup
+              label="Next 60 days"
+              policies={buckets.d60}
+              asOfDate={asOfDate}
+              assetNameByKey={assetNameByKey}
+            />
+            <RenewalGroup
+              label="Next 90 days"
+              policies={buckets.d90}
+              asOfDate={asOfDate}
+              assetNameByKey={assetNameByKey}
+            />
           </div>
 
           {buckets.later.length > 0 && (
@@ -451,10 +466,12 @@ function RenewalGroup({
   label,
   policies,
   asOfDate,
+  assetNameByKey,
 }: {
   label: string;
   policies: Policy[];
   asOfDate: string;
+  assetNameByKey: Map<string, string>;
 }) {
   return (
     <div>
@@ -471,6 +488,9 @@ function RenewalGroup({
           {policies.map((policy) => {
             const days = daysUntil(policy.renewalDate, asOfDate);
             const dueSoon = days <= 30;
+            const relatedAssetNames = policy.relatedAssetKeys
+              .map((key) => assetNameByKey.get(key))
+              .filter((name): name is string => Boolean(name));
 
             return (
               <div
@@ -483,15 +503,20 @@ function RenewalGroup({
                 <div className="min-w-0">
                   <p className="font-semibold text-midnight">{policy.type}</p>
                   <p className="mt-0.5 text-sm text-muted-ink">{policy.insurer}</p>
+                  <p className="mt-0.5 text-sm text-muted-ink">
+                    {relatedAssetNames.length > 0 ? relatedAssetNames.join(", ") : "—"}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                  <span className="text-sm text-muted-ink">{policy.sumInsured}</span>
                   <span className="text-sm text-muted-ink">
                     {formatRenewalDate(policy.renewalDate)}
                   </span>
                   <span className={cn("text-sm font-medium", dueSoon ? "text-amber" : "text-ink/80")}>
                     in {days} day{days === 1 ? "" : "s"}
                   </span>
+                  <StatusPill status={policy.status} />
                   <Button asChild size="sm" variant="outline">
                     <Link href="/app/portfolio#policies">Review renewal</Link>
                   </Button>
