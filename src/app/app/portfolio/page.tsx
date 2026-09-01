@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -10,12 +13,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatusPill } from "@/components/coverage/StatusPill";
 import { demoCompany } from "@/lib/demo-data";
 import { useSession } from "@/lib/store";
 import { formatEmployees } from "@/lib/format";
 import { portfolioCounts, renewalBuckets } from "@/lib/portfolio";
-import type { Asset } from "@/lib/types";
+import type { Asset, AssetCategory, Policy } from "@/lib/types";
 
 /**
  * Common legal-entity suffixes trimmed for a cleaner headline/intro line.
@@ -66,6 +86,37 @@ const STATUS_DOT_STYLE = {
 type StatusTone = keyof typeof STATUS_TONE_STYLE;
 
 /**
+ * Asset type options offered in "Add asset". Category is derived from type
+ * (no separate category toggle) — property-like types are immovable,
+ * everything else (vehicles/machinery/equipment/other) is movable.
+ */
+const ASSET_TYPE_OPTIONS: { value: string; category: AssetCategory }[] = [
+  { value: "Factory", category: "immovable" },
+  { value: "Warehouse", category: "immovable" },
+  { value: "Office", category: "immovable" },
+  { value: "Other property", category: "immovable" },
+  { value: "Vehicles", category: "movable" },
+  { value: "Machinery", category: "movable" },
+  { value: "Equipment", category: "movable" },
+  { value: "Other", category: "movable" },
+];
+
+type InsuredChoice = "yes" | "no" | "notsure";
+
+const INSURED_OPTIONS: { value: InsuredChoice; label: string }[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "notsure", label: "Not sure" },
+];
+
+const CATEGORY_LABEL: Record<AssetCategory, string> = {
+  immovable: "Immovable",
+  movable: "Movable",
+};
+
+const fieldLabel = "text-[13.5px] font-medium text-midnight";
+
+/**
  * Portfolio (Screen — hero product & control centre). This is the system of
  * record: everything protecting the business, in one place. Risk assessment
  * / gaps / recommendations (the /app/protection page) are an intelligence
@@ -98,6 +149,9 @@ export default function PortfolioPage() {
   const notIdentifiedCount = counts.notIdentified + counts.unavailable;
 
   const assetNameByKey = new Map(assets.map((a) => [a.key, a.name]));
+  const policyLabelByKey = new Map(
+    policies.map((p) => [p.key, `${p.type} · ${p.insurer}`])
+  );
 
   const topFacts = [
     { label: "Policies", value: policies.length },
@@ -254,14 +308,37 @@ export default function PortfolioPage() {
         </section>
 
         {/* -------------------------------------------------------------- */}
-        {/* Placeholder anchors for later tasks — headings only for now.     */}
-        {/* I3 slots an asset inventory table into #assets; I4 adds the      */}
-        {/* add-asset flow alongside it; I6 slots a renewal timeline into    */}
-        {/* #renewals. I5 (Share / Insights) adds further sections after.    */}
+        {/* Assets — the asset -> insurance coverage -> policy relationship. */}
+        {/* Grouped by category (immovable/movable); each row shows the     */}
+        {/* related policy (or "Coverage not identified") rather than       */}
+        {/* treating assets and policies as unrelated lists.                */}
         {/* -------------------------------------------------------------- */}
         <section id="assets" className="mt-14 scroll-mt-24">
-          <p className="kicker">Assets</p>
-          <h2 className="h-section mt-1 text-midnight">Assets</h2>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="kicker">Assets</p>
+              <h2 className="h-section mt-1 text-midnight">Assets</h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-ink">
+                Your business assets and the coverage identified for each.
+              </p>
+            </div>
+            <AddAssetDialog policies={policies} />
+          </div>
+
+          <div className="mt-6 space-y-8">
+            {(["immovable", "movable"] as AssetCategory[]).map((category) => {
+              const groupAssets = assets.filter((a) => a.category === category);
+              if (groupAssets.length === 0) return null;
+              return (
+                <AssetGroup
+                  key={category}
+                  label={CATEGORY_LABEL[category]}
+                  assets={groupAssets}
+                  policyLabelByKey={policyLabelByKey}
+                />
+              );
+            })}
+          </div>
         </section>
 
         <section id="renewals" className="mt-14 scroll-mt-24">
@@ -270,5 +347,293 @@ export default function PortfolioPage() {
         </section>
       </div>
     </motion.div>
+  );
+}
+
+/**
+ * One category subgroup of the Assets section — a restrained divided list
+ * (not a wall of cards). Each row surfaces the asset -> policy relationship
+ * directly: the related policy label(s), or "Coverage not identified" when
+ * relatedPolicyKeys is empty (never invents a policy). Assets with a gap
+ * (not-identified / potential-gap) get the signature service CTA.
+ */
+function AssetGroup({
+  label,
+  assets,
+  policyLabelByKey,
+}: {
+  label: string;
+  assets: Asset[];
+  policyLabelByKey: Map<string, string>;
+}) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-ink">
+        {label}
+      </p>
+      <div className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line bg-white shadow-soft">
+        {assets.map((asset) => {
+          const hasGap =
+            asset.insuranceStatus === "not-identified" ||
+            asset.insuranceStatus === "potential-gap";
+          const relatedLabels = asset.relatedPolicyKeys
+            .map((key) => policyLabelByKey.get(key))
+            .filter((l): l is string => Boolean(l));
+          const relationship =
+            relatedLabels.length > 0 ? relatedLabels.join(", ") : "Coverage not identified";
+
+          return (
+            <div
+              key={asset.key}
+              className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0">
+                <p className="font-semibold text-midnight">{asset.name}</p>
+                <p className="mt-0.5 text-sm text-muted-ink">
+                  {asset.type} · {asset.location}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                <span className="text-sm font-medium text-midnight">{asset.value}</span>
+                <StatusPill status={asset.insuranceStatus} />
+                <span
+                  className={cn(
+                    "text-sm",
+                    relatedLabels.length > 0 ? "text-ink/80" : "text-muted-ink"
+                  )}
+                >
+                  {relationship}
+                </span>
+                {hasGap && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/app/recommendations">Secure with CoverSure</Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * "Add asset" dialog — the persisted store interaction (I1's useSession.addAsset).
+ * A new asset added here shows up in the Assets section immediately (session
+ * state) and survives a refresh (zustand `persist` -> localStorage). Category
+ * is derived from the chosen asset type; the "insured" branch decides whether
+ * a policy link is offered or a careful gap/uncertainty note is shown —
+ * mirrors the guardrail language in the portfolio spec, never invents a
+ * policy or claims inadequacy.
+ */
+function AddAssetDialog({ policies }: { policies: Policy[] }) {
+  const addAsset = useSession((s) => s.addAsset);
+
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState("");
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
+  const [value, setValue] = useState("");
+  const [acquisitionDate, setAcquisitionDate] = useState("");
+  const [insured, setInsured] = useState<InsuredChoice>("notsure");
+  const [linkedPolicyKey, setLinkedPolicyKey] = useState("");
+  const [errors, setErrors] = useState<{ type?: boolean; name?: boolean }>({});
+
+  function resetForm() {
+    setType("");
+    setName("");
+    setLocation("");
+    setValue("");
+    setAcquisitionDate("");
+    setInsured("notsure");
+    setLinkedPolicyKey("");
+    setErrors({});
+  }
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) resetForm();
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    const nextErrors = {
+      type: type.trim().length === 0,
+      name: name.trim().length === 0,
+    };
+    setErrors(nextErrors);
+    if (nextErrors.type || nextErrors.name) return;
+
+    const category: AssetCategory =
+      ASSET_TYPE_OPTIONS.find((opt) => opt.value === type)?.category ?? "movable";
+
+    addAsset({
+      type,
+      name: name.trim(),
+      category,
+      location: location.trim(),
+      value: value.trim(),
+      acquisitionDate: acquisitionDate.trim().length > 0 ? acquisitionDate : undefined,
+      insured,
+      linkedPolicyKey: insured === "yes" && linkedPolicyKey ? linkedPolicyKey : undefined,
+    });
+
+    handleOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Plus className="size-4" />
+          Add asset
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add a business asset</DialogTitle>
+        </DialogHeader>
+
+        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+          <div className="space-y-2">
+            <Label htmlFor="asset-type" className={fieldLabel}>
+              Asset type
+            </Label>
+            <Select value={type} onValueChange={(v) => setType(v)}>
+              <SelectTrigger
+                id="asset-type"
+                aria-invalid={errors.type || undefined}
+                className={errors.type ? "border-danger" : undefined}
+              >
+                <SelectValue placeholder="Select asset type" />
+              </SelectTrigger>
+              <SelectContent>
+                {ASSET_TYPE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.type && (
+              <p className="text-xs text-danger">Please select an asset type.</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="asset-name" className={fieldLabel}>
+              Asset name
+            </Label>
+            <Input
+              id="asset-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              aria-invalid={errors.name || undefined}
+              className={errors.name ? "border-danger" : undefined}
+            />
+            {errors.name && (
+              <p className="text-xs text-danger">Please add an asset name.</p>
+            )}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="asset-location" className={fieldLabel}>
+                Location
+              </Label>
+              <Input
+                id="asset-location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="asset-value" className={fieldLabel}>
+                Estimated value
+              </Label>
+              <Input
+                id="asset-value"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="e.g. ₹2 Cr"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="asset-acquisition" className={fieldLabel}>
+              Acquisition date (optional)
+            </Label>
+            <Input
+              id="asset-acquisition"
+              type="date"
+              value={acquisitionDate}
+              onChange={(e) => setAcquisitionDate(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className={fieldLabel}>Is this asset already insured?</Label>
+            <div className="flex gap-2">
+              {INSURED_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setInsured(opt.value)}
+                  className={cn(
+                    "flex-1 rounded-[10px] border-[1.5px] px-3 py-2 text-sm font-medium transition-colors",
+                    insured === opt.value
+                      ? "border-electric bg-electric text-white"
+                      : "border-line bg-white text-ink hover:bg-app-bg"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {insured === "yes" && (
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="asset-linked-policy" className={fieldLabel}>
+                  Link an existing policy (optional)
+                </Label>
+                <Select value={linkedPolicyKey} onValueChange={(v) => setLinkedPolicyKey(v)}>
+                  <SelectTrigger id="asset-linked-policy">
+                    <SelectValue placeholder="Select a policy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {policies.map((p) => (
+                      <SelectItem key={p.key} value={p.key}>
+                        {p.type} · {p.insurer}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {insured === "no" && (
+              <p className="mt-2 rounded-lg border border-danger/25 bg-danger/10 px-3 py-2 text-xs text-danger">
+                Potential protection gap identified.
+              </p>
+            )}
+
+            {insured === "notsure" && (
+              <p className="mt-2 rounded-lg border border-line bg-line/50 px-3 py-2 text-xs text-muted-ink">
+                Coverage could not be confirmed from the information currently available.
+              </p>
+            )}
+          </div>
+
+          <div className="flex justify-end border-t border-line pt-5">
+            <Button type="submit">Add asset</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
