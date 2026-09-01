@@ -31,11 +31,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusPill } from "@/components/coverage/StatusPill";
+import { Meter, type MeterLevel } from "@/components/score/Meter";
 import { demoCompany } from "@/lib/demo-data";
 import { useSession } from "@/lib/store";
 import { formatEmployees } from "@/lib/format";
-import { daysUntil, portfolioCounts, renewalBuckets } from "@/lib/portfolio";
-import type { Asset, AssetCategory, Policy } from "@/lib/types";
+import { daysUntil, deriveInsights, portfolioCounts, renewalBuckets, type Insight } from "@/lib/portfolio";
+import type { Asset, AssetCategory, Policy, Severity } from "@/lib/types";
+
+/**
+ * Severity -> Meter level, same mapping used on /app/insights and RiskCard
+ * (src/components/risk/RiskCard.tsx). Visual mapping only.
+ */
+const SEVERITY_LEVEL: Record<Severity, MeterLevel> = {
+  good: 1,
+  review: 2,
+  attention: 3,
+  high: 4,
+};
 
 /**
  * Common legal-entity suffixes trimmed for a cleaner headline/intro line.
@@ -168,6 +180,16 @@ export default function PortfolioPage() {
     { key: "not-identified", label: "Not identified", count: notIdentifiedCount, tone: "slate" },
   ];
 
+  // CoverSure Insights summary — the top 2-3 most attention-worthy
+  // observations from the same deriveInsights selector /app/insights uses,
+  // ranked by severity (ties keep deriveInsights' own order). Nothing here
+  // is hardcoded; it disappears entirely once there is nothing to surface.
+  const SEVERITY_RANK: Record<Severity, number> = { high: 0, attention: 1, review: 2, good: 3 };
+  const insights = deriveInsights(demoCompany, assets);
+  const topInsights: Insight[] = [...insights]
+    .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity])
+    .slice(0, 3);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -232,6 +254,43 @@ export default function PortfolioPage() {
             Indicative status based on the information in your portfolio.
           </p>
         </section>
+
+        {/* -------------------------------------------------------------- */}
+        {/* CoverSure Insights — a restrained preview of the intelligence     */}
+        {/* layer (I5's /app/insights), not a restatement of the score.       */}
+        {/* Sourced from the same deriveInsights selector; disappears when    */}
+        {/* there is nothing to surface.                                      */}
+        {/* -------------------------------------------------------------- */}
+        {topInsights.length > 0 && (
+          <section id="insights" className="mt-14 scroll-mt-24">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="kicker">CoverSure Insights</p>
+                <h2 className="h-section mt-1 text-midnight">What needs attention?</h2>
+              </div>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/app/insights">View all insights</Link>
+              </Button>
+            </div>
+
+            <div className="mt-6 divide-y divide-line overflow-hidden rounded-xl border border-line bg-white shadow-soft">
+              {topInsights.map((insight) => (
+                <div
+                  key={insight.id}
+                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex items-start gap-3">
+                    <Meter level={SEVERITY_LEVEL[insight.severity]} className="mt-1" />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-midnight">{insight.title}</p>
+                      <p className="mt-0.5 text-sm text-muted-ink">{insight.detail}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* -------------------------------------------------------------- */}
         {/* Policies — PI/D&O table                                          */}
