@@ -6,5 +6,5 @@ const run = (c) => {
 };
 
 run("npx tsc --noEmit");
-run("node --test --experimental-strip-types src/test/demo-data.invariants.test.mjs");
+run('node --test --experimental-strip-types "src/test/**/*.test.mjs"');
 console.log("verify: OK");

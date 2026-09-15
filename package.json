@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:data": "node --test --experimental-strip-types src/test/demo-data.invariants.test.mjs",
+    "test:engine": "node --test --experimental-strip-types \"src/test/engine.*.test.mjs\"",
+    "test": "node --test --experimental-strip-types \"src/test/**/*.test.mjs\"",
     "verify": "node scripts/verify.mjs"
   },
   "dependencies": {

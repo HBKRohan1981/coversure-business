@@ -1,6 +1,9 @@
 # CoverSure Business — Risk Assessment Engine Specification
 
-**Status:** Draft v0.2 (design spec — not yet built)
+**Status:** Draft v0.2 (design spec) — engine stub BUILT (`src/lib/engine/`). This remains the
+**reference baseline**. A proposed **v0.3 direction** (multi-dimensional: Adequacy + Breadth +
+Evidence Completeness + flags) is documented in `risk-assessment-engine-v0.3-proposal.md`; it does
+not change this v0.2 definition.
 **Scope:** The real assessment engine that replaces the demo's authored scores.
 **Owner:** CoverSure product + broking. Calibration values marked ⚙️ need CoverSure sign-off.
 **v0.2 changelog:** added assessment modes (not everything is SI-scored); tri-state coverage terms;
